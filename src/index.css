@@ -1,0 +1,115 @@
+@import "tailwindcss";
+
+@theme {
+  /* ---- typography ---- */
+  --font-display: "Fraunces", serif;
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "Space Mono", monospace;
+
+  /* ---- Wanderlist palette (from design) ---- */
+  --color-page: #ece8e0;
+  --color-panel: #f5f2ec;
+  --color-surface: #ffffff;
+  --color-surface-soft: #f7f4ee;
+  --color-card-border: #eae5db;
+  --color-panel-border: #dad3c6;
+  --color-chrome: #e6e1d8;
+
+  --color-ink: #22333b;
+  --color-muted-1: #6b7a82;
+  --color-muted-2: #7b8583;
+  --color-muted-3: #8a9391;
+  --color-muted-4: #96a09e;
+  --color-muted-5: #9aa4a2;
+  --color-muted-6: #a2aba8;
+  --color-muted-7: #a9b0ae;
+
+  --color-teal: #0e7c86;
+  --color-teal-hover: #0b656d;
+  --color-teal-soft: #e3f1f1;
+  --color-teal-ghost: #eaf4f4;
+
+  --color-terracotta: #e76f51;
+  --color-terracotta-hover: #d65e3c;
+
+  --color-remove-bg: #f6f1ea;
+  --color-remove-bg-hover: #f3e4df;
+  --color-remove-text-hover: #c4472a;
+
+  --color-converter-bg: #faf8f3;
+  --color-converter-border: #eee9df;
+
+  --color-input-border: #e4dfd4;
+
+  --color-dot-red: #e76f51;
+  --color-dot-yellow: #ebc15a;
+  --color-dot-green: #7fb98a;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-page);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+  }
+
+  ::placeholder {
+    color: var(--color-muted-7);
+    opacity: 1;
+  }
+}
+
+@layer components {
+  .search-input:focus,
+  .amount-input:focus {
+    outline: none;
+    border-color: var(--color-teal);
+    box-shadow: 0 0 0 4px rgba(14, 124, 134, 0.12);
+  }
+
+  .amount-input:focus {
+    background: #fff;
+  }
+
+  .card-hover {
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+  .card-hover:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 34px rgba(20, 45, 55, 0.12);
+  }
+
+  .nav-link {
+    position: relative;
+    text-decoration: none;
+    color: #5a6763;
+    font-weight: 500;
+    padding: 6px 2px;
+    transition: color 0.15s;
+  }
+  .nav-link:hover {
+    color: var(--color-ink);
+  }
+  .nav-link.active {
+    color: var(--color-teal);
+    font-weight: 600;
+  }
+  .nav-link.active::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -6px;
+    height: 2px;
+    background: var(--color-teal);
+    border-radius: 2px;
+  }
+}
