@@ -11,41 +11,41 @@ import { useBucketList } from "@/context/BucketListContext"
 function SearchPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [results, setResults] = useState([])
-  const [status, setStatus] = useState("idle") // idle | loading | error | empty
+  const [status, setStatus] = useState("idle")
 
-  const { addCountry, isCountrySaved } = useBucketList()
+  const { addCountry, isCountrySaved, bucketList } = useBucketList()
 
-  async function handleSearch() {
-    const query = searchQuery.trim()
-
+  async function handleSearch(queryOverride) {
+    const query = (queryOverride ?? searchQuery).trim()
     if (!query) return
 
     setStatus("loading")
 
     try {
       const countries = await searchCountries(query)
-
       setResults(countries)
       setStatus(countries.length === 0 ? "empty" : "idle")
+      setSearchQuery("")
     } catch {
       setStatus("error")
     }
   }
 
-  function handleAdd(country) {
-    if (isCountrySaved(country.code)) {
-      toast.info(`${country.name} already exists in your list`)
-      return
-    }
+  function handleAdd(country, amount) {
+    const wasAlreadySaved = isCountrySaved(country.code)
 
-    addCountry(country)
-    toast.success(`${country.name} added to your list`)
+    addCountry(country, amount)
+
+    if (wasAlreadySaved) {
+      toast.info(`${country.name}'s amount updated in your list`)
+    } else {
+      toast.success(`${country.name} added to your list`)
+    }
   }
 
   return (
     <div className="min-h-screen bg-panel">
       <div className="max-w-[900px] mx-auto px-6 py-8">
-
         <Navbar />
 
         <h2 className="font-display font-semibold text-[28px] tracking-[-0.01em] mt-[26px] mb-1">
@@ -65,9 +65,7 @@ function SearchPage() {
         </div>
 
         {status === "loading" && (
-          <p className="text-muted-1 text-sm mb-4">
-            Searching…
-          </p>
+          <p className="text-muted-1 text-sm mb-4">Searching…</p>
         )}
 
         {status === "error" && (
@@ -78,21 +76,24 @@ function SearchPage() {
 
         {status === "empty" && (
           <p className="text-muted-1 text-sm mb-4">
-            No countries matched &ldquo;{searchQuery}&rdquo;.
+            No countries matched.
           </p>
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {results.map((country) => (
-            <CountryCard
-              key={country.code}
-              country={country}
-              mode="add"
-              onAction={handleAdd}
-            />
-          ))}
+          {results.map((country, index) => {
+            const saved = bucketList.find((item) => item.code === country.code)
+            return (
+              <CountryCard
+                key={country.code}
+                country={saved ? { ...country, amount: saved.amount } : country}
+                mode="add"
+                onAction={handleAdd}
+                autoFocus={index === 0}
+              />
+            )
+          })}
         </div>
-
       </div>
     </div>
   )

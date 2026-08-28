@@ -1,25 +1,52 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { ArrowRight } from "lucide-react"
 
 import { Input } from "@/components/ui/input"
 import { convertCurrency } from "@/lib/api"
+import { cn } from "@/lib/utils"
 
-/**
- * <Converter />
- * Owns its own `amount` — this is per-card UI state, not app-wide
- * state, so it does NOT live in BucketListContext (see the
- * architecture notes). Whenever the amount or target currency
- * changes, it waits a beat (so it's not firing on every keystroke)
- * then asks the currency API for the latest available rate. No "Convert" button needed.
- */
-function Converter({ fromCurrency = "PKR", toCurrency, size = "sm", showRateNote = false }) {
-  const [amount, setAmount] = useState("1000")
+function Converter({
+  fromCurrency = "PKR",
+  toCurrency,
+  size = "sm",
+  showRateNote = false,
+  initialAmount = "",
+  readOnly = false,
+  onAmountChange,
+  onEnterPress,
+  autoFocus = false,
+}) {
+  const [amount, setAmount] = useState(initialAmount)
   const [result, setResult] = useState(null)
   const [rateDate, setRateDate] = useState(null)
-  const [status, setStatus] = useState("idle") // idle | loading | error
+  const [status, setStatus] = useState("idle")
 
+  const inputRef = useRef(null)
   const numericAmount = Number(amount)
   const isValidAmount = amount !== "" && !Number.isNaN(numericAmount)
+
+  useEffect(() => {
+    if (autoFocus && !readOnly) {
+      const timeoutId = setTimeout(() => {
+        inputRef.current?.focus()
+      }, 50)
+      return () => clearTimeout(timeoutId)
+    }
+  }, [autoFocus, readOnly])
+
+  function handleAmountChange(event) {
+    const value = event.target.value
+    setAmount(value)
+    onAmountChange?.(value)
+  }
+
+  function handleKeyDown(event) {
+    if (event.key === "Enter" && onEnterPress) {
+      event.preventDefault()
+      onEnterPress()
+      inputRef.current?.blur() // Enter press hote hi focus input field se bahar chala jaye ga
+    }
+  }
 
   useEffect(() => {
     if (!toCurrency || !isValidAmount) {
@@ -65,13 +92,17 @@ function Converter({ fromCurrency = "PKR", toCurrency, size = "sm", showRateNote
 
       <div className="flex items-center gap-[10px] flex-wrap">
         <Input
-          className={
+          ref={inputRef}
+          className={cn(
             isLg
               ? "amount-input font-mono font-bold text-[17px] text-ink w-[120px] px-[13px] py-[11px]"
-              : "amount-input font-mono font-bold text-[15px] text-ink w-[88px] px-[11px] py-[9px] rounded-[9px]"
-          }
+              : "amount-input font-mono font-bold text-[15px] text-ink w-[88px] px-[11px] py-[9px] rounded-[9px]",
+            readOnly && "bg-surface-soft text-muted-2 cursor-default"
+          )}
           value={amount}
-          onChange={(event) => setAmount(event.target.value)}
+          onChange={handleAmountChange}
+          onKeyDown={handleKeyDown}
+          readOnly={readOnly}
         />
         <span className="font-mono text-[13px] text-muted-2 font-bold">
           {fromCurrency}
@@ -107,7 +138,7 @@ function Converter({ fromCurrency = "PKR", toCurrency, size = "sm", showRateNote
 
       {showRateNote && rateDate && (
         <div className="text-[11.5px] text-muted-6 mt-[11px]">
-          Rate as of {rateDate} · ExchangeRate-API
+          Rate as of {rateDate} · Frankfurter
         </div>
       )}
     </div>

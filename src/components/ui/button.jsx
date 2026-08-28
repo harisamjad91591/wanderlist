@@ -12,6 +12,10 @@ const buttonVariants = cva(
           "bg-teal text-white hover:bg-teal-hover px-6 h-[52px] rounded-xl",
         // <CountryCard /> "Add to my list" state
         add: "bg-terracotta text-white hover:bg-terracotta-hover w-full py-[11px] rounded-[11px] text-[14.5px]",
+        // <CountryCard /> "Added" state — shown (disabled) right after a
+        // successful add, until the amount changes again
+        added:
+          "bg-white text-muted-4 border-[1.5px] border-card-border w-full py-[11px] rounded-[11px] text-[14.5px] disabled:opacity-100",
         // <CountryCard /> "Remove from list" state
         remove:
           "bg-remove-bg text-muted-3 hover:bg-remove-bg-hover hover:text-remove-text-hover w-full py-[11px] rounded-[11px] text-[14.5px]",

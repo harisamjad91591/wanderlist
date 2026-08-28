@@ -23,14 +23,14 @@ function Stat({ label, value }) {
   )
 }
 
-// Split out so `key={code}` on the wrapper below forces a full remount
-// whenever the route param changes — that resets `status` back to its
-// "loading" initial value for free, instead of calling setState
-// synchronously inside the effect (which React's lint rules flag).
 function CountryDetail({ code }) {
-  const { addCountry } = useBucketList()
+  const { bucketList, addCountry, removeCountry, isCountrySaved } = useBucketList()
   const [country, setCountry] = useState(null)
-  const [status, setStatus] = useState("loading") // loading | idle | error
+  const [status, setStatus] = useState("loading")
+  
+  const savedItem = bucketList.find((item) => item.code === code)
+  const isSaved = isCountrySaved(code)
+  const [amount, setAmount] = useState(savedItem?.amount ?? "")
 
   useEffect(() => {
     let cancelled = false
@@ -50,9 +50,29 @@ function CountryDetail({ code }) {
     }
   }, [code])
 
-  function handleAdd() {
-    addCountry(country)
-    toast.success(`${country.name} added to your list`)
+  useEffect(() => {
+    if (savedItem?.amount !== undefined) {
+      setAmount(savedItem.amount)
+    }
+  }, [savedItem])
+
+  function handleAddOrUpdate() {
+    if (!country) return
+    const wasAlreadySaved = isCountrySaved(country.code)
+
+    addCountry(country, amount)
+
+    if (wasAlreadySaved) {
+      toast.info(`${country.name}'s amount updated in your list`)
+    } else {
+      toast.success(`${country.name} added to your list`)
+    }
+  }
+
+  function handleRemove() {
+    if (!country) return
+    removeCountry(country.code)
+    toast.info(`${country.name} removed from your list`)
   }
 
   if (status === "loading") {
@@ -110,14 +130,30 @@ function CountryDetail({ code }) {
               toCurrency={country.currency}
               size="lg"
               showRateNote
+              initialAmount={savedItem?.amount ?? ""}
+              onAmountChange={setAmount}
+              onEnterPress={handleAddOrUpdate}
             />
           </div>
         )}
 
-        <Button variant="add" className="mt-4" onClick={handleAdd}>
-          <Plus className="size-[19px]" strokeWidth={3} />
-          Add to my list
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-3 mt-4">
+          {isSaved ? (
+            <>
+              <Button variant="add" onClick={handleAddOrUpdate}>
+                Update amount
+              </Button>
+              <Button variant="remove" onClick={handleRemove}>
+                Remove from list
+              </Button>
+            </>
+          ) : (
+            <Button variant="add" onClick={handleAddOrUpdate}>
+              <Plus className="size-[19px]" strokeWidth={3} />
+              Add to my list
+            </Button>
+          )}
+        </div>
       </CardContent>
     </Card>
   )

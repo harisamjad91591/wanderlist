@@ -1,13 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react"
 
-// Shared "my list" state — this is the one thing multiple pages need
-// at once (Navbar's count, SearchPage's add button, MyListPage's
-// remove button), so it lives in Context instead of one page's state.
-//
-// `code` is each country's unique id in our mock data. Once the real
-// Countries API is wired up (see lib/api.js), swap it for whatever
-// unique field that API returns (e.g. the ISO cca3 code).
-
 const BucketListContext = createContext(null)
 
 const STORAGE_KEY = "wanderlist:bucket-list"
@@ -23,19 +15,30 @@ function readInitialList() {
 
 export function BucketListProvider({ children }) {
   const [bucketList, setBucketList] = useState(readInitialList)
+  const [searchQuery, setSearchQuery] = useState("")
 
-  // Keep localStorage in sync whenever the list changes.
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(bucketList))
   }, [bucketList])
 
-  function addCountry(country) {
+  function addCountry(country, amount) {
     setBucketList((currentList) => {
-      const alreadyExists = currentList.some(
+      const existingIndex = currentList.findIndex(
         (item) => item.code === country.code
       )
-      if (alreadyExists) return currentList
-      return [...currentList, country]
+
+      if (existingIndex === -1) {
+        return [...currentList, { ...country, amount }]
+      }
+
+      const updatedList = [...currentList]
+      const existing = updatedList[existingIndex]
+      updatedList[existingIndex] = {
+        ...existing,
+        ...country,
+        amount: amount !== undefined ? amount : existing.amount,
+      }
+      return updatedList
     })
   }
 
@@ -49,7 +52,26 @@ export function BucketListProvider({ children }) {
     return bucketList.some((item) => item.code === code)
   }
 
-  const value = { bucketList, addCountry, removeCountry, isCountrySaved }
+  // Live Filtered List: Filter query ke mutabiq items filter hote hain
+  const queryLower = searchQuery.trim().toLowerCase()
+  const filteredBucketList = bucketList.filter((country) => {
+    if (!queryLower) return true
+    return country.name?.toLowerCase().startsWith(queryLower)
+  })
+
+  // Dynamic Count: Jab search query hogi to filtered count (e.g. 3) show hoga, warna total (e.g. 10)
+  const displayCount = filteredBucketList.length
+
+  const value = {
+    bucketList,
+    filteredBucketList,
+    searchQuery,
+    setSearchQuery,
+    displayCount,
+    addCountry,
+    removeCountry,
+    isCountrySaved,
+  }
 
   return (
     <BucketListContext.Provider value={value}>

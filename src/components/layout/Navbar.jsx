@@ -2,24 +2,26 @@ import { NavLink } from "react-router-dom"
 
 import { Badge } from "@/components/ui/badge"
 import { useBucketList } from "@/context/BucketListContext"
+import ThemeToggle from "@/components/layout/ThemeToggle"
 
-/**
- * <Navbar />
- * Identical on every page — only the active link changes, and that's
- * handled automatically by NavLink. The list count comes straight
- * from BucketListContext, so it's always in sync everywhere.
- */
 function Navbar() {
-  const { bucketList } = useBucketList()
+  const { displayCount } = useBucketList()
 
   return (
-    <nav className="flex items-center justify-between bg-white border border-card-border rounded-[11px] px-[18px] py-[13px]">
-      <div className="flex items-center gap-[9px] font-mono text-sm tracking-[0.14em] uppercase text-ink font-bold">
-        <span className="w-[9px] h-[9px] rounded-full bg-terracotta inline-block" />
-        Wanderlist
+    <nav className="flex items-center justify-between bg-white dark:bg-card-border border border-card-border rounded-[11px] px-[18px] py-[13px] shadow-sm transition-colors">
+      
+      {/* High-Contrast Gradient Logo */}
+      <div className="flex items-center gap-[10px] select-none cursor-pointer">
+        <span className="relative flex h-2.5 w-2.5">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-terracotta opacity-65"></span>
+          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-terracotta"></span>
+        </span>
+        <span className="font-display font-extrabold text-[18px] tracking-[0.08em] uppercase bg-gradient-to-r from-teal via-[#142d37] to-terracotta dark:from-teal dark:via-teal-ghost dark:to-terracotta bg-clip-text text-transparent drop-shadow-sm">
+          Wanderlist
+        </span>
       </div>
 
-      <div className="flex items-center gap-[26px] text-[15px]">
+      <div className="flex items-center gap-[18px] text-[15px]">
         <NavLink
           to="/"
           end
@@ -34,8 +36,10 @@ function Navbar() {
           }
         >
           My List
-          <Badge>{bucketList.length}</Badge>
+          <Badge>{displayCount}</Badge>
         </NavLink>
+
+        <ThemeToggle />
       </div>
     </nav>
   )

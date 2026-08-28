@@ -1,71 +1,80 @@
-// APIs used (both free, open source, keyless — checked 27 Aug 2026):
-//
-// 1. Countries — https://github.com/trevorblades/countries
-//    Open-source public GraphQL API for country data. No key, no
-//    rate limit. Note: this schema does NOT include population or
-//    area, and search is by code/currency/continent only (not by
-//    name) — so we fetch the full list once and filter by name
-//    ourselves in `searchCountries`.
-//
-// 2. Frankfurter — https://github.com/lineofflight/frankfurter
-//    Open-source (MIT) currency conversion API, no key, no rate
-//    limit. v2's /rate/{base}/{quote} returns one flat object:
-//    { date, base, quote, rate }.
+const COUNTRIES_API_URL = "https://api.restcountries.com/countries/v5"
+const RATES_API_URL = "https://api.frankfurter.dev/v2"
 
-const COUNTRIES_API_URL = "https://countries.trevorblades.com/graphql"
-// const RATES_API_URL = "https://api.frankfurter.dev/v2"
-const RATES_API_URL = "https://open.er-api.com/v6/latest"
+// Hardcoded API Key for practice
+const COUNTRIES_API_KEY = "rc_live_075f423d21cc46098a8be3098beced10"
 
+const RESPONSE_FIELDS =
+  "names.common,codes.alpha_2,capitals,currencies,calling_codes,continents,languages"
 
-const COUNTRY_FIELDS = `
-  code
-  name
-  native
-  capital
-  emoji
-  currency
-  phone
-  continent { name }
-  languages { name }
-`
+async function countriesRequest(path, params = {}) {
+  const url = new URL(`${COUNTRIES_API_URL}${path}`)
+  url.searchParams.set("response_fields", RESPONSE_FIELDS)
 
-async function graphqlRequest(query, variables) {
-  const res = await fetch(COUNTRIES_API_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query, variables }),
-  })
-  const json = await res.json()
-  if (json.errors?.length) {
-    throw new Error(json.errors[0].message)
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null && value !== "") {
+      url.searchParams.set(key, value)
+    }
   }
+
+  const res = await fetch(url.toString(), {
+    method: "GET",
+    headers: { Authorization: `Bearer ${COUNTRIES_API_KEY}` },
+  })
+
+  const json = await res.json()
+
+  if (!res.ok) {
+    console.error("Countries API error:", res.status, json)
+    throw new Error(json.errors?.[0]?.message ?? `Countries API error (${res.status})`)
+  }
+
   return json.data
 }
 
-// The full list is ~250 small records — fetched once, then reused
-// for every search so we're not re-downloading it on every keystroke.
-let allCountriesCache = null
+function normalizeCountry(raw) {
+  const currency = getCurrencyCode(raw.currencies)
 
-async function getAllCountries() {
-  if (allCountriesCache) return allCountriesCache
-  const data = await graphqlRequest(`query { countries { ${COUNTRY_FIELDS} } }`)
-  allCountriesCache = data.countries
-  return allCountriesCache
+  return {
+    code: raw.codes?.alpha_2 ?? null,
+    name: raw.names?.common ?? "",
+    capital: raw.capitals?.[0]?.name ?? null,
+    currency,
+    phone: raw.calling_codes?.[0] ?? null,
+    continent: raw.continents?.[0] ? { name: raw.continents[0] } : null,
+    languages: Array.isArray(raw.languages)
+      ? raw.languages.map((lang) => ({
+          name: lang.name ?? lang.english_name ?? lang.common ?? "",
+        }))
+      : [],
+  }
+}
+
+function getCurrencyCode(currencies) {
+  if (!currencies) return null
+
+  if (Array.isArray(currencies)) {
+    const first = currencies[0]
+    if (!first) return null
+    return typeof first === "string" ? first : first.code ?? first.iso_code ?? null
+  }
+
+  const keys = Object.keys(currencies)
+  return keys[0] ?? null
 }
 
 export async function searchCountries(query) {
-  const q = query.trim().toLowerCase()
+  const q = query.trim()
   if (!q) return []
-  const countries = await getAllCountries()
-  return countries.filter((country) => country.name.toLowerCase().includes(q))
+
+  const data = await countriesRequest("/name", { q, limit: 20 })
+  return (data.objects ?? []).map(normalizeCountry)
 }
 
 export async function getCountryByCode(code) {
-  const data = await graphqlRequest(
-    `query GetCountry($code: ID!) { country(code: $code) { ${COUNTRY_FIELDS} } }`,
-    { code }
-  )
-  return data.country
+  const data = await countriesRequest(`/codes.alpha_2/${code}`)
+  const raw = data.objects?.[0]
+  return raw ? normalizeCountry(raw) : null
 }
 
 export async function convertCurrency({ amount, from, to }) {
@@ -82,27 +91,23 @@ export async function convertCurrency({ amount, from, to }) {
   const base = from.toUpperCase()
   const target = to.toUpperCase()
 
-  const res = await fetch(`${RATES_API_URL}/${base}`)
+  const res = await fetch(`${RATES_API_URL}/rate/${base}/${target}`, {
+    method: "GET",
+  })
 
   if (!res.ok) {
-    throw new Error(`Unable to fetch rates for ${base}`)
+    throw new Error(`Conversion unavailable for ${base} → ${target}`)
   }
 
   const data = await res.json()
 
-  if (data.result !== "success") {
-    throw new Error(`Currency rates unavailable for ${base}`)
-  }
-
-  const rate = data.rates?.[target]
-
-  if (typeof rate !== "number") {
+  if (typeof data.rate !== "number") {
     throw new Error(`Conversion unavailable for ${base} → ${target}`)
   }
 
   return {
-    rate,
-    result: numericAmount * rate,
-    date: data.time_last_update_utc ?? null,
+    rate: data.rate,
+    result: numericAmount * data.rate,
+    date: data.date ?? null,
   }
 }

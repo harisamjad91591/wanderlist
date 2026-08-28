@@ -113,3 +113,30 @@
     border-radius: 2px;
   }
 }
+/* Dark Mode Global Styles */
+.dark {
+  color-scheme: dark;
+}
+
+.dark body,
+.dark .bg-panel {
+  background-color: #0f172a;
+  color: #f8fafc;
+}
+
+.dark .bg-white {
+  background-color: #1e293b;
+  color: #f8fafc;
+}
+
+.dark .text-ink {
+  color: #f8fafc;
+}
+
+.dark .border-card-border {
+  border-color: #334155;
+}
+
+.dark .bg-converter-bg {
+  background-color: #0f172a;
+}
