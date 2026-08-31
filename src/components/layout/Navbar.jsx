@@ -9,8 +9,6 @@ function Navbar() {
 
   return (
     <nav className="flex items-center justify-between bg-white dark:bg-card-border border border-card-border rounded-[11px] px-[18px] py-[13px] shadow-sm transition-colors">
-      
-      {/* High-Contrast Gradient Logo */}
       <div className="flex items-center gap-[10px] select-none cursor-pointer">
         <span className="relative flex h-2.5 w-2.5">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-terracotta opacity-65"></span>
@@ -37,6 +35,12 @@ function Navbar() {
         >
           My List
           <Badge>{displayCount}</Badge>
+        </NavLink>
+        <NavLink
+          to="/history"
+          className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}
+        >
+          History
         </NavLink>
 
         <ThemeToggle />

@@ -20,10 +20,12 @@ function Converter({
   const [result, setResult] = useState(null)
   const [rateDate, setRateDate] = useState(null)
   const [status, setStatus] = useState("idle")
+  const [inputError, setInputError] = useState("")
 
   const inputRef = useRef(null)
+
   const numericAmount = Number(amount)
-  const isValidAmount = amount !== "" && !Number.isNaN(numericAmount)
+  const isValidAmount = amount !== "" && !Number.isNaN(numericAmount) && !inputError
 
   useEffect(() => {
     if (autoFocus && !readOnly) {
@@ -37,37 +39,55 @@ function Converter({
   function handleAmountChange(event) {
     const value = event.target.value
     setAmount(value)
+
+    if (value !== "" && Number.isNaN(Number(value))) {
+      setInputError("Only numbers are allowed")
+    } else if (Number(value) < 0) {
+      setInputError("Amount cannot be negative")
+    } else {
+      setInputError("")
+    }
+
     onAmountChange?.(value)
   }
 
   function handleKeyDown(event) {
-    if (event.key === "Enter" && onEnterPress) {
+    if (event.key === "Enter" && onEnterPress && !inputError) {
       event.preventDefault()
       onEnterPress()
-      inputRef.current?.blur() // Enter press hote hi focus input field se bahar chala jaye ga
+      inputRef.current?.blur()
     }
   }
 
   useEffect(() => {
     if (!toCurrency || !isValidAmount) {
+      setResult(null)
+      setStatus("idle")
       return
     }
 
+    let cancelled = false
+    setStatus("loading")
+
     const timeoutId = setTimeout(() => {
-      setStatus("loading")
       convertCurrency({ amount: numericAmount, from: fromCurrency, to: toCurrency })
         .then((data) => {
+          if (cancelled) return
           setResult(data.result)
           setRateDate(data.date)
           setStatus("idle")
         })
         .catch(() => {
+          if (cancelled) return
           setResult(null)
           setStatus("error")
         })
     }, 400)
 
-    return () => clearTimeout(timeoutId)
+    return () => {
+      cancelled = true
+      clearTimeout(timeoutId)
+    }
   }, [numericAmount, isValidAmount, fromCurrency, toCurrency])
 
   const isLg = size === "lg"
@@ -91,19 +111,23 @@ function Converter({
       </div>
 
       <div className="flex items-center gap-[10px] flex-wrap">
-        <Input
-          ref={inputRef}
-          className={cn(
-            isLg
-              ? "amount-input font-mono font-bold text-[17px] text-ink w-[120px] px-[13px] py-[11px]"
-              : "amount-input font-mono font-bold text-[15px] text-ink w-[88px] px-[11px] py-[9px] rounded-[9px]",
-            readOnly && "bg-surface-soft text-muted-2 cursor-default"
-          )}
-          value={amount}
-          onChange={handleAmountChange}
-          onKeyDown={handleKeyDown}
-          readOnly={readOnly}
-        />
+        <div className="flex flex-col">
+          <Input
+            ref={inputRef}
+            className={cn(
+              isLg
+                ? "amount-input font-mono font-bold text-[17px] text-ink w-[120px] px-[13px] py-[11px]"
+                : "amount-input font-mono font-bold text-[15px] text-ink w-[88px] px-[11px] py-[9px] rounded-[9px]",
+              readOnly && "bg-surface-soft text-muted-2 cursor-default",
+              inputError && "border-remove-text-hover focus:ring-remove-text-hover"
+            )}
+            value={amount}
+            onChange={handleAmountChange}
+            onKeyDown={handleKeyDown}
+            readOnly={readOnly}
+          />
+        </div>
+
         <span className="font-mono text-[13px] text-muted-2 font-bold">
           {fromCurrency}
         </span>
@@ -114,7 +138,7 @@ function Converter({
               Rate unavailable
             </span>
           )}
-          {status !== "error" && result !== null && (
+          {status !== "error" && result !== null && !inputError && (
             <>
               <span
                 className={
@@ -130,13 +154,19 @@ function Converter({
               </span>
             </>
           )}
-          {status === "loading" && result === null && (
+          {status === "loading" && (
             <span className="font-mono text-[13px] text-muted-5">…</span>
           )}
         </div>
       </div>
 
-      {showRateNote && rateDate && (
+      {inputError && (
+        <div className="font-mono text-[11.5px] text-remove-text-hover mt-2 font-semibold">
+          ⚠️ {inputError}
+        </div>
+      )}
+
+      {showRateNote && rateDate && !inputError && (
         <div className="text-[11.5px] text-muted-6 mt-[11px]">
           Rate as of {rateDate} · Frankfurter
         </div>

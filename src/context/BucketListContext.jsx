@@ -3,73 +3,142 @@ import { createContext, useContext, useEffect, useState } from "react"
 const BucketListContext = createContext(null)
 
 const STORAGE_KEY = "wanderlist:bucket-list"
+const HISTORY_KEY = "wanderlist:history"
 
-function readInitialList() {
+function readStorage(key, fallback = []) {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : []
+    const raw = localStorage.getItem(key)
+    return raw ? JSON.parse(raw) : fallback
   } catch {
-    return []
+    return fallback
   }
 }
 
 export function BucketListProvider({ children }) {
-  const [bucketList, setBucketList] = useState(readInitialList)
+  const [bucketList, setBucketList] = useState(() => readStorage(STORAGE_KEY))
+  const [history, setHistory] = useState(() => readStorage(HISTORY_KEY))
   const [searchQuery, setSearchQuery] = useState("")
+  const [sortBy, setSortBy] = useState("default")
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(bucketList))
   }, [bucketList])
 
+  useEffect(() => {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history))
+  }, [history])
+
+  function addHistoryLog(type, countryName, details) {
+    if (!countryName) return
+    const newEntry = {
+      id: Date.now().toString() + "-" + Math.random().toString(36).substring(2, 7),
+      type,
+      countryName,
+      details,
+      timestamp: new Date().toLocaleString("en-US", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }),
+    }
+    setHistory((prev) => [newEntry, ...prev])
+  }
+
   function addCountry(country, amount) {
-    setBucketList((currentList) => {
-      const existingIndex = currentList.findIndex(
-        (item) => item.code === country.code
+    if (!country || !country.code) return
+
+    const existingItem = bucketList.find((item) => item.code === country.code)
+
+    if (!existingItem) {
+      addHistoryLog("ADD", country.name, `Added to Bucket List with budget ${amount || 0} PKR`)
+      setBucketList((prev) => [...prev, { ...country, amount: amount || "0", note: "" }])
+    } else {
+      const oldAmount = existingItem.amount || "0"
+      const newAmount = amount !== undefined ? amount : oldAmount
+
+      if (String(oldAmount) !== String(newAmount)) {
+        addHistoryLog("UPDATE", country.name, `Updated budget from ${oldAmount} PKR to ${newAmount} PKR`)
+      }
+
+      setBucketList((prev) =>
+        prev.map((item) =>
+          item.code === country.code
+            ? { ...item, ...country, amount: newAmount }
+            : item
+        )
       )
+    }
+  }
 
-      if (existingIndex === -1) {
-        return [...currentList, { ...country, amount }]
-      }
+  function updateCountryNote(code, note) {
+    if (!code) return
+    const existingItem = bucketList.find((item) => item.code === code)
 
-      const updatedList = [...currentList]
-      const existing = updatedList[existingIndex]
-      updatedList[existingIndex] = {
-        ...existing,
-        ...country,
-        amount: amount !== undefined ? amount : existing.amount,
-      }
-      return updatedList
-    })
+    if (existingItem && existingItem.note !== note) {
+      addHistoryLog("NOTE", existingItem.name, `Updated travel notes: "${note}"`)
+      setBucketList((prev) =>
+        prev.map((item) => (item.code === code ? { ...item, note } : item))
+      )
+    }
   }
 
   function removeCountry(code) {
-    setBucketList((currentList) =>
-      currentList.filter((item) => item.code !== code)
-    )
+    if (!code) return
+    const itemToRemove = bucketList.find((item) => item.code === code)
+    if (itemToRemove) {
+      addHistoryLog("REMOVE", itemToRemove.name, "Removed from Bucket List")
+    }
+    setBucketList((prev) => prev.filter((item) => item.code !== code))
+  }
+
+  function clearBucketList() {
+    if (bucketList.length > 0) {
+      addHistoryLog("REMOVE", "All Saved Places", "Cleared all countries from Bucket List")
+    }
+    setBucketList([])
+  }
+
+  function clearHistory() {
+    setHistory([])
   }
 
   function isCountrySaved(code) {
+    if (!code) return false
     return bucketList.some((item) => item.code === code)
   }
 
-  // Live Filtered List: Filter query ke mutabiq items filter hote hain
   const queryLower = searchQuery.trim().toLowerCase()
-  const filteredBucketList = bucketList.filter((country) => {
+  let processedList = bucketList.filter((country) => {
     if (!queryLower) return true
-    return country.name?.toLowerCase().startsWith(queryLower)
+    return country?.name?.toLowerCase().startsWith(queryLower)
   })
 
-  // Dynamic Count: Jab search query hogi to filtered count (e.g. 3) show hoga, warna total (e.g. 10)
-  const displayCount = filteredBucketList.length
+  if (sortBy === "name-asc") {
+    processedList = [...processedList].sort((a, b) => (a.name || "").localeCompare(b.name || ""))
+  } else if (sortBy === "name-desc") {
+    processedList = [...processedList].sort((a, b) => (b.name || "").localeCompare(a.name || ""))
+  } else if (sortBy === "budget-high") {
+    processedList = [...processedList].sort((a, b) => Number(b.amount || 0) - Number(a.amount || 0))
+  } else if (sortBy === "budget-low") {
+    processedList = [...processedList].sort((a, b) => Number(a.amount || 0) - Number(b.amount || 0))
+  }
+
+  const totalBudgetPKR = bucketList.reduce((sum, item) => sum + Number(item.amount || 0), 0)
 
   const value = {
     bucketList,
-    filteredBucketList,
+    filteredBucketList: processedList,
+    history,
     searchQuery,
     setSearchQuery,
-    displayCount,
+    sortBy,
+    setSortBy,
+    displayCount: processedList.length,
+    totalBudgetPKR,
     addCountry,
+    updateCountryNote,
     removeCountry,
+    clearBucketList,
+    clearHistory,
     isCountrySaved,
   }
 
