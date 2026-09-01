@@ -4,6 +4,7 @@
  * 1. LIGHT MODE (PURE "CHITTA" WHITE & ULTRA-CLEAN UI)
  * ------------------------------------------------------------- */
 :root {
+<<<<<<< HEAD
   --teal: #0d9488;
   --teal-ghost: rgba(13, 148, 136, 0.12);
 
@@ -15,6 +16,22 @@
   --color-panel-border: #cbd5e1;
   --color-chrome: #f8fafc;
 
+=======
+  /* Dynamic Accent Color Default */
+  --teal: #0d9488;
+  --teal-ghost: rgba(13, 148, 136, 0.12);
+
+  /* Pure White & Clean Crisp Palette */
+  --color-page: #f8fafc;           /* Ultra crisp light background */
+  --color-panel: #ffffff;          /* Pure white panel */
+  --color-surface: #ffffff;        /* Pure white card surface */
+  --color-surface-soft: #f1f5f9;   /* Soft slate highlight */
+  --color-card-border: #e2e8f0;    /* Crisp subtle border */
+  --color-panel-border: #cbd5e1;
+  --color-chrome: #f8fafc;
+
+  /* High Contrast Professional Readable Text */
+>>>>>>> feature/theme-palette-picker
   --color-ink: #0f172a;            /* Deep slate black text */
   --color-muted-1: #475569;
   --color-muted-2: #64748b;
@@ -35,15 +52,25 @@
 .dark {
   color-scheme: dark;
 
+<<<<<<< HEAD
   --color-page: #0f172a;
   --color-panel: #1e293b;
   --color-surface: #1e293b;
+=======
+  --color-page: #0f172a;           /* Deep dark slate page */
+  --color-panel: #1e293b;          /* Dark slate panel */
+  --color-surface: #1e293b;        /* Dark slate cards */
+>>>>>>> feature/theme-palette-picker
   --color-surface-soft: #334155;
   --color-card-border: #334155;
   --color-panel-border: #475569;
   --color-chrome: #0f172a;
 
+<<<<<<< HEAD
   --color-ink: #f8fafc;
+=======
+  --color-ink: #f8fafc;            /* Bright white text */
+>>>>>>> feature/theme-palette-picker
   --color-muted-1: #cbd5e1;
   --color-muted-2: #94a3b8;
   --color-muted-3: #64748b;
@@ -172,6 +199,7 @@
     border-radius: 2px;
   }
 }
+<<<<<<< HEAD
 
 .bg-panel {
   background-color: var(--color-panel) !important;
@@ -191,6 +219,32 @@
 .text-teal {
   color: var(--teal) !important;
 }
+=======
+
+/* Utility Helpers */
+.bg-panel {
+  background-color: var(--color-panel) !important;
+}
+
+.bg-white {
+  background-color: var(--color-surface) !important;
+}
+
+.text-ink {
+  color: var(--color-ink) !important;
+}
+
+.border-card-border {
+  border-color: var(--color-card-border) !important;
+}
+
+.bg-teal {
+  background-color: var(--teal) !important;
+}
+.text-teal {
+  color: var(--teal) !important;
+}
+>>>>>>> feature/theme-palette-picker
 .border-teal {
   border-color: var(--teal) !important;
 }

@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { getCountryByCode } from "@/lib/api"
 import { getCurrencySymbol, getFlagUrl } from "@/lib/utils"
-import { useBucketList } from "@/context/BucketListContext"
+import { useBucketList } from "@/store/useBucketListStore"
 
 function Stat({ label, value }) {
   return (
@@ -85,6 +85,13 @@ function CountryDetail({ code }) {
       toast.info(`${country.name}'s details updated in your list`)
     } else {
       toast.success(`${country.name} added to your list`)
+    }
+  }
+
+  function handleKeyDownNote(e) {
+    if (e.key === "Enter") {
+      e.preventDefault()
+      handleAddOrUpdate()
     }
   }
 
@@ -183,6 +190,7 @@ function CountryDetail({ code }) {
             placeholder="e.g. Visit Mount Fuji, try street food, buy souvenirs…"
             value={note}
             onChange={(e) => setNote(e.target.value)}
+            onKeyDown={handleKeyDownNote}
             className="w-full text-sm px-4 py-3 rounded-xl bg-panel dark:bg-slate-900 border border-card-border dark:border-slate-700 text-ink dark:text-white focus:outline-none focus:ring-2 focus:ring-teal/30"
           />
         </div>
