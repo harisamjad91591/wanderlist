@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { getCurrencySymbol, getFlagUrl } from "@/lib/utils"
-import { useBucketList } from "@/context/BucketListContext"
+import { useBucketList } from "@/store/useBucketListStore"
 
 function CountryCard({ country, mode = "add", onUpdate, onRemove }) {
   const { updateCountryNote } = useBucketList()
@@ -28,11 +28,21 @@ function CountryCard({ country, mode = "add", onUpdate, onRemove }) {
     onUpdate?.(country, currentAmount)
   }
 
+  // Enter press karne par note auto-save hoga
+  function handleKeyDownNote(e) {
+    if (e.key === "Enter") {
+      e.preventDefault()
+      handleBlurNote()
+      e.target.blur()
+    }
+  }
+
   const isAmountChanged = String(currentAmount).trim() !== String(country.amount || "").trim()
 
   return (
     <Card className="rounded-[18px] bg-white dark:bg-slate-800 border-card-border dark:border-slate-700 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
       <CardContent className="p-[18px] space-y-4">
+        {/* Header Flag & Info */}
         <div className="flex items-start justify-between gap-3">
           <Link
             to={`/country/${country.code}`}
@@ -60,6 +70,7 @@ function CountryCard({ country, mode = "add", onUpdate, onRemove }) {
           )}
         </div>
 
+        {/* Converter Field */}
         {country.currency && (
           <div className="space-y-2">
             <Converter
@@ -89,6 +100,7 @@ function CountryCard({ country, mode = "add", onUpdate, onRemove }) {
           </div>
         )}
 
+        {/* Travel Notes Section */}
         <div className="space-y-1.5 pt-1">
           {!showNoteInput ? (
             <button
@@ -111,12 +123,14 @@ function CountryCard({ country, mode = "add", onUpdate, onRemove }) {
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 onBlur={handleBlurNote}
+                onKeyDown={handleKeyDownNote}
                 className="w-full text-xs px-3 py-2 rounded-lg bg-panel dark:bg-slate-900 border border-card-border dark:border-slate-700 text-ink dark:text-white focus:outline-none focus:ring-1 focus:ring-teal"
               />
             </div>
           )}
         </div>
 
+        {/* Footer Actions */}
         {mode === "remove" && (
           <div className="pt-2 border-t border-card-border dark:border-slate-700/60 flex items-center justify-between gap-2">
             <Link
