@@ -1,76 +1,52 @@
 @import "tailwindcss";
 
 /* -------------------------------------------------------------
- * 1. LIGHT MODE (PURE "CHITTA" WHITE & ULTRA-CLEAN UI)
+ * 1. LIGHT MODE (PREMIUM ICE-BLUE & CRISP WHITE UI)
  * ------------------------------------------------------------- */
 :root {
-<<<<<<< HEAD
-  --teal: #0d9488;
-  --teal-ghost: rgba(13, 148, 136, 0.12);
+  /* Vibrant Primary Accent Blue & Glows */
+  --teal: #2563eb;                          /* Modern Royal Blue */
+  --teal-ghost: rgba(37, 99, 235, 0.10);    /* Soft Blue Tint */
 
-  --color-page: #f8fafc;           /* Pure white / crisp light page */
-  --color-panel: #ffffff;          /* Pure white panel */
-  --color-surface: #ffffff;        /* Pure white card surface */
-  --color-surface-soft: #f1f5f9;
-  --color-card-border: #e2e8f0;
-  --color-panel-border: #cbd5e1;
-  --color-chrome: #f8fafc;
+  /* Ice-Blue White Layout Palette */
+  --color-page: #f0f4f9;                    /* Soft ice-blue tinted page background */
+  --color-panel: #ffffff;                   /* Pure crisp white panels */
+  --color-surface: #ffffff;                 /* Pure white card surfaces */
+  --color-surface-soft: #e0e7ff;            /* Light ice-blue highlight */
+  --color-card-border: #dbeafe;             /* Subtle soft blue borders */
+  --color-panel-border: #bfdbfe;
+  --color-chrome: #f0f4f9;
 
-=======
-  /* Dynamic Accent Color Default */
-  --teal: #0d9488;
-  --teal-ghost: rgba(13, 148, 136, 0.12);
-
-  /* Pure White & Clean Crisp Palette */
-  --color-page: #f8fafc;           /* Ultra crisp light background */
-  --color-panel: #ffffff;          /* Pure white panel */
-  --color-surface: #ffffff;        /* Pure white card surface */
-  --color-surface-soft: #f1f5f9;   /* Soft slate highlight */
-  --color-card-border: #e2e8f0;    /* Crisp subtle border */
-  --color-panel-border: #cbd5e1;
-  --color-chrome: #f8fafc;
-
-  /* High Contrast Professional Readable Text */
->>>>>>> feature/theme-palette-picker
-  --color-ink: #0f172a;            /* Deep slate black text */
-  --color-muted-1: #475569;
-  --color-muted-2: #64748b;
-  --color-muted-3: #94a3b8;
-  --color-muted-4: #cbd5e1;
-  --color-muted-5: #64748b;
-  --color-muted-6: #94a3b8;
-  --color-muted-7: #cbd5e1;
+  /* High Contrast Deep Slate Navy Text */
+  --color-ink: #0f172a;                     /* Deep navy black heading/body text */
+  --color-muted-1: #334155;                 /* Medium slate text */
+  --color-muted-2: #475569;
+  --color-muted-3: #64748b;
+  --color-muted-4: #94a3b8;
+  --color-muted-5: #475569;
+  --color-muted-6: #64748b;
+  --color-muted-7: #94a3b8;
 
   --color-converter-bg: #f8fafc;
-  --color-converter-border: #e2e8f0;
+  --color-converter-border: #dbeafe;
   --color-input-border: #cbd5e1;
 }
 
 /* -------------------------------------------------------------
- * 2. DARK MODE (RICH DARK SLATE UI)
+ * 2. DARK MODE (DEEP NIGHT NAVY SLATE UI)
  * ------------------------------------------------------------- */
 .dark {
   color-scheme: dark;
 
-<<<<<<< HEAD
-  --color-page: #0f172a;
-  --color-panel: #1e293b;
-  --color-surface: #1e293b;
-=======
-  --color-page: #0f172a;           /* Deep dark slate page */
-  --color-panel: #1e293b;          /* Dark slate panel */
-  --color-surface: #1e293b;        /* Dark slate cards */
->>>>>>> feature/theme-palette-picker
+  --color-page: #0b1329;                    /* Deep night blue-black */
+  --color-panel: #1e293b;                   /* Dark slate panel */
+  --color-surface: #1e293b;                 /* Dark slate cards */
   --color-surface-soft: #334155;
   --color-card-border: #334155;
   --color-panel-border: #475569;
-  --color-chrome: #0f172a;
+  --color-chrome: #0b1329;
 
-<<<<<<< HEAD
-  --color-ink: #f8fafc;
-=======
-  --color-ink: #f8fafc;            /* Bright white text */
->>>>>>> feature/theme-palette-picker
+  --color-ink: #f8fafc;                     /* Pure white text */
   --color-muted-1: #cbd5e1;
   --color-muted-2: #94a3b8;
   --color-muted-3: #64748b;
@@ -131,7 +107,7 @@
 }
 
 /* -------------------------------------------------------------
- * 4. BASE STYLES & OVERRIDES FOR CLEAN TRANSITION
+ * 4. BASE STYLES & ENHANCED CARD STYLING
  * ------------------------------------------------------------- */
 @layer base {
   * {
@@ -144,7 +120,7 @@
     color: var(--color-ink) !important;
     font-family: var(--font-sans);
     line-height: 1.6;
-    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
   }
 
   ::placeholder {
@@ -165,12 +141,13 @@
     background: var(--color-surface);
   }
 
+  /* Smooth Modern Floating Shadows on Hover */
   .card-hover {
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
   }
   .card-hover:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px -8px rgba(37, 99, 235, 0.15);
   }
 
   .nav-link {
@@ -199,52 +176,26 @@
     border-radius: 2px;
   }
 }
-<<<<<<< HEAD
-
-.bg-panel {
-  background-color: var(--color-panel) !important;
-}
-.bg-white {
-  background-color: var(--color-surface) !important;
-}
-.text-ink {
-  color: var(--color-ink) !important;
-}
-.border-card-border {
-  border-color: var(--color-card-border) !important;
-}
-.bg-teal {
-  background-color: var(--teal) !important;
-}
-.text-teal {
-  color: var(--teal) !important;
-}
-=======
 
 /* Utility Helpers */
 .bg-panel {
   background-color: var(--color-panel) !important;
 }
-
 .bg-white {
   background-color: var(--color-surface) !important;
 }
-
 .text-ink {
   color: var(--color-ink) !important;
 }
-
 .border-card-border {
   border-color: var(--color-card-border) !important;
 }
-
 .bg-teal {
   background-color: var(--teal) !important;
 }
 .text-teal {
   color: var(--teal) !important;
 }
->>>>>>> feature/theme-palette-picker
 .border-teal {
   border-color: var(--teal) !important;
 }
