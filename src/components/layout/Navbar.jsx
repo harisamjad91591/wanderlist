@@ -1,47 +1,73 @@
-import { NavLink } from "react-router-dom"
+import { History, Globe, Heart } from "lucide-react"
+import { Link, useLocation } from "react-router-dom"
 
-import { Badge } from "@/components/ui/badge"
-import { useBucketList } from "@/context/BucketListContext"
 import ThemeToggle from "@/components/layout/ThemeToggle"
+import { Badge } from "@/components/ui/badge"
+import { useBucketList } from "@/store/useBucketListStore"
 
 function Navbar() {
-  const { displayCount } = useBucketList()
+  const { bucketList, history } = useBucketList()
+  const location = useLocation()
 
   return (
-    <nav className="flex items-center justify-between bg-white dark:bg-card-border border border-card-border rounded-[11px] px-[18px] py-[13px] shadow-sm transition-colors">
-      <div className="flex items-center gap-[10px] select-none cursor-pointer">
-        <span className="relative flex h-2.5 w-2.5">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-terracotta opacity-65"></span>
-          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-terracotta"></span>
-        </span>
-        <span className="font-display font-extrabold text-[18px] tracking-[0.08em] uppercase bg-gradient-to-r from-teal via-[#142d37] to-terracotta dark:from-teal dark:via-teal-ghost dark:to-terracotta bg-clip-text text-transparent drop-shadow-sm">
+    <nav className="flex items-center justify-between pb-6 border-b border-card-border dark:border-slate-800">
+      <Link to="/" className="flex items-center gap-2.5 no-underline group">
+        <div className="p-2 rounded-xl bg-teal text-white shadow-sm group-hover:scale-105 transition-transform">
+          <Globe className="size-5" />
+        </div>
+        <span className="font-display font-bold text-xl text-ink dark:text-white tracking-tight">
           Wanderlist
         </span>
-      </div>
+      </Link>
 
-      <div className="flex items-center gap-[18px] text-[15px]">
-        <NavLink
-          to="/"
-          end
-          className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}
+      <div className="flex items-center gap-3">
+        <Link
+          to="/my-list"
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold no-underline transition-all ${
+            location.pathname === "/my-list"
+              ? "bg-teal text-white shadow-sm"
+              : "bg-white dark:bg-slate-800 text-ink dark:text-white border border-card-border dark:border-slate-700 hover:border-teal"
+          }`}
         >
-          Search
-        </NavLink>
-        <NavLink
-          to="/list"
-          className={({ isActive }) =>
-            `nav-link inline-flex items-center gap-[7px]${isActive ? " active" : ""}`
-          }
-        >
-          My List
-          <Badge>{displayCount}</Badge>
-        </NavLink>
-        <NavLink
+          <Heart className="size-3.5" />
+          <span>My List</span>
+          {bucketList.length > 0 && (
+            <Badge
+              size="sm"
+              className={
+                location.pathname === "/my-list"
+                  ? "bg-white text-teal font-bold"
+                  : "bg-teal text-white"
+              }
+            >
+              {bucketList.length}
+            </Badge>
+          )}
+        </Link>
+
+        <Link
           to="/history"
-          className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold no-underline transition-all ${
+            location.pathname === "/history"
+              ? "bg-teal text-white shadow-sm"
+              : "bg-white dark:bg-slate-800 text-ink dark:text-white border border-card-border dark:border-slate-700 hover:border-teal"
+          }`}
         >
-          History
-        </NavLink>
+          <History className="size-3.5" />
+          <span>History</span>
+          {history.length > 0 && (
+            <Badge
+              size="sm"
+              className={
+                location.pathname === "/history"
+                  ? "bg-white text-teal font-bold"
+                  : "bg-teal text-white"
+              }
+            >
+              {history.length}
+            </Badge>
+          )}
+        </Link>
 
         <ThemeToggle />
       </div>

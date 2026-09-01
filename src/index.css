@@ -1,51 +1,114 @@
 @import "tailwindcss";
 
+/* -------------------------------------------------------------
+ * 1. LIGHT MODE (PREMIUM ICE-BLUE & CRISP WHITE UI)
+ * ------------------------------------------------------------- */
+:root {
+  /* Vibrant Primary Accent Blue & Glows */
+  --teal: #2563eb;                          /* Modern Royal Blue */
+  --teal-ghost: rgba(37, 99, 235, 0.10);    /* Soft Blue Tint */
+
+  /* Ice-Blue White Layout Palette */
+  --color-page: #f0f4f9;                    /* Soft ice-blue tinted page background */
+  --color-panel: #ffffff;                   /* Pure crisp white panels */
+  --color-surface: #ffffff;                 /* Pure white card surfaces */
+  --color-surface-soft: #e0e7ff;            /* Light ice-blue highlight */
+  --color-card-border: #dbeafe;             /* Subtle soft blue borders */
+  --color-panel-border: #bfdbfe;
+  --color-chrome: #f0f4f9;
+
+  /* High Contrast Deep Slate Navy Text */
+  --color-ink: #0f172a;                     /* Deep navy black heading/body text */
+  --color-muted-1: #334155;                 /* Medium slate text */
+  --color-muted-2: #475569;
+  --color-muted-3: #64748b;
+  --color-muted-4: #94a3b8;
+  --color-muted-5: #475569;
+  --color-muted-6: #64748b;
+  --color-muted-7: #94a3b8;
+
+  --color-converter-bg: #f8fafc;
+  --color-converter-border: #dbeafe;
+  --color-input-border: #cbd5e1;
+}
+
+/* -------------------------------------------------------------
+ * 2. DARK MODE (DEEP NIGHT NAVY SLATE UI)
+ * ------------------------------------------------------------- */
+.dark {
+  color-scheme: dark;
+
+  --color-page: #0b1329;                    /* Deep night blue-black */
+  --color-panel: #1e293b;                   /* Dark slate panel */
+  --color-surface: #1e293b;                 /* Dark slate cards */
+  --color-surface-soft: #334155;
+  --color-card-border: #334155;
+  --color-panel-border: #475569;
+  --color-chrome: #0b1329;
+
+  --color-ink: #f8fafc;                     /* Pure white text */
+  --color-muted-1: #cbd5e1;
+  --color-muted-2: #94a3b8;
+  --color-muted-3: #64748b;
+  --color-muted-4: #64748b;
+  --color-muted-5: #94a3b8;
+  --color-muted-6: #cbd5e1;
+  --color-muted-7: #64748b;
+
+  --color-converter-bg: #0f172a;
+  --color-converter-border: #334155;
+  --color-input-border: #334155;
+}
+
+/* -------------------------------------------------------------
+ * 3. TAILWIND V4 THEME MAPPING
+ * ------------------------------------------------------------- */
 @theme {
-  /* ---- typography ---- */
   --font-display: "Fraunces", serif;
   --font-sans: "Inter", system-ui, -apple-system, sans-serif;
   --font-mono: "Space Mono", monospace;
 
-  /* ---- Wanderlist palette (from design) ---- */
-  --color-page: #ece8e0;
-  --color-panel: #f5f2ec;
-  --color-surface: #ffffff;
-  --color-surface-soft: #f7f4ee;
-  --color-card-border: #eae5db;
-  --color-panel-border: #dad3c6;
-  --color-chrome: #e6e1d8;
+  --color-page: var(--color-page);
+  --color-panel: var(--color-panel);
+  --color-surface: var(--color-surface);
+  --color-surface-soft: var(--color-surface-soft);
+  --color-card-border: var(--color-card-border);
+  --color-panel-border: var(--color-panel-border);
+  --color-chrome: var(--color-chrome);
 
-  --color-ink: #22333b;
-  --color-muted-1: #6b7a82;
-  --color-muted-2: #7b8583;
-  --color-muted-3: #8a9391;
-  --color-muted-4: #96a09e;
-  --color-muted-5: #9aa4a2;
-  --color-muted-6: #a2aba8;
-  --color-muted-7: #a9b0ae;
+  --color-ink: var(--color-ink);
+  --color-muted-1: var(--color-muted-1);
+  --color-muted-2: var(--color-muted-2);
+  --color-muted-3: var(--color-muted-3);
+  --color-muted-4: var(--color-muted-4);
+  --color-muted-5: var(--color-muted-5);
+  --color-muted-6: var(--color-muted-6);
+  --color-muted-7: var(--color-muted-7);
 
-  --color-teal: #0e7c86;
-  --color-teal-hover: #0b656d;
-  --color-teal-soft: #e3f1f1;
-  --color-teal-ghost: #eaf4f4;
+  --color-teal: var(--teal);
+  --color-teal-hover: var(--teal);
+  --color-teal-soft: var(--teal-ghost);
+  --color-teal-ghost: var(--teal-ghost);
 
   --color-terracotta: #e76f51;
   --color-terracotta-hover: #d65e3c;
 
-  --color-remove-bg: #f6f1ea;
-  --color-remove-bg-hover: #f3e4df;
-  --color-remove-text-hover: #c4472a;
+  --color-remove-bg: #fef2f2;
+  --color-remove-bg-hover: #fee2e2;
+  --color-remove-text-hover: #dc2626;
 
-  --color-converter-bg: #faf8f3;
-  --color-converter-border: #eee9df;
+  --color-converter-bg: var(--color-converter-bg);
+  --color-converter-border: var(--color-converter-border);
+  --color-input-border: var(--color-input-border);
 
-  --color-input-border: #e4dfd4;
-
-  --color-dot-red: #e76f51;
-  --color-dot-yellow: #ebc15a;
-  --color-dot-green: #7fb98a;
+  --color-dot-red: #ef4444;
+  --color-dot-yellow: #f59e0b;
+  --color-dot-green: #10b981;
 }
 
+/* -------------------------------------------------------------
+ * 4. BASE STYLES & ENHANCED CARD STYLING
+ * ------------------------------------------------------------- */
 @layer base {
   * {
     box-sizing: border-box;
@@ -53,14 +116,15 @@
 
   body {
     margin: 0;
-    background: var(--color-page);
-    color: var(--color-ink);
+    background-color: var(--color-page) !important;
+    color: var(--color-ink) !important;
     font-family: var(--font-sans);
     line-height: 1.6;
+    transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
   }
 
   ::placeholder {
-    color: var(--color-muted-7);
+    color: var(--color-muted-3);
     opacity: 1;
   }
 }
@@ -69,28 +133,27 @@
   .search-input:focus,
   .amount-input:focus {
     outline: none;
-    border-color: var(--color-teal);
-    box-shadow: 0 0 0 4px rgba(14, 124, 134, 0.12);
+    border-color: var(--teal);
+    box-shadow: 0 0 0 4px var(--teal-ghost);
   }
 
   .amount-input:focus {
-    background: #fff;
+    background: var(--color-surface);
   }
 
+  /* Smooth Modern Floating Shadows on Hover */
   .card-hover {
-    transition:
-      transform 0.15s ease,
-      box-shadow 0.15s ease;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
   }
   .card-hover:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 14px 34px rgba(20, 45, 55, 0.12);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px -8px rgba(37, 99, 235, 0.15);
   }
 
   .nav-link {
     position: relative;
     text-decoration: none;
-    color: #5a6763;
+    color: var(--color-muted-1);
     font-weight: 500;
     padding: 6px 2px;
     transition: color 0.15s;
@@ -99,7 +162,7 @@
     color: var(--color-ink);
   }
   .nav-link.active {
-    color: var(--color-teal);
+    color: var(--teal);
     font-weight: 600;
   }
   .nav-link.active::after {
@@ -109,34 +172,33 @@
     right: 0;
     bottom: -6px;
     height: 2px;
-    background: var(--color-teal);
+    background: var(--teal);
     border-radius: 2px;
   }
 }
-/* Dark Mode Global Styles */
-.dark {
-  color-scheme: dark;
-}
 
-.dark body,
-.dark .bg-panel {
-  background-color: #0f172a;
-  color: #f8fafc;
+/* Utility Helpers */
+.bg-panel {
+  background-color: var(--color-panel) !important;
 }
-
-.dark .bg-white {
-  background-color: #1e293b;
-  color: #f8fafc;
+.bg-white {
+  background-color: var(--color-surface) !important;
 }
-
-.dark .text-ink {
-  color: #f8fafc;
+.text-ink {
+  color: var(--color-ink) !important;
 }
-
-.dark .border-card-border {
-  border-color: #334155;
+.border-card-border {
+  border-color: var(--color-card-border) !important;
 }
-
-.dark .bg-converter-bg {
-  background-color: #0f172a;
+.bg-teal {
+  background-color: var(--teal) !important;
+}
+.text-teal {
+  color: var(--teal) !important;
+}
+.border-teal {
+  border-color: var(--teal) !important;
+}
+.bg-teal-ghost {
+  background-color: var(--teal-ghost) !important;
 }
