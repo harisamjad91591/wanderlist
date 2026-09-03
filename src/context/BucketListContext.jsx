@@ -106,12 +106,14 @@ export function BucketListProvider({ children }) {
     return bucketList.some((item) => item.code === code)
   }
 
+  // Filter countries starting with the typed letter/prefix
   const queryLower = searchQuery.trim().toLowerCase()
   let processedList = bucketList.filter((country) => {
     if (!queryLower) return true
-    return country?.name?.toLowerCase().startsWith(queryLower)
+    return country?.name?.trim().toLowerCase().startsWith(queryLower)
   })
 
+  // Sorting logic
   if (sortBy === "name-asc") {
     processedList = [...processedList].sort((a, b) => (a.name || "").localeCompare(b.name || ""))
   } else if (sortBy === "name-desc") {
@@ -122,7 +124,8 @@ export function BucketListProvider({ children }) {
     processedList = [...processedList].sort((a, b) => Number(a.amount || 0) - Number(b.amount || 0))
   }
 
-  const totalBudgetPKR = bucketList.reduce((sum, item) => sum + Number(item.amount || 0), 0)
+  // Dynamic budget calculation based on filtered items
+  const totalBudgetPKR = processedList.reduce((sum, item) => sum + Number(item.amount || 0), 0)
 
   const value = {
     bucketList,
