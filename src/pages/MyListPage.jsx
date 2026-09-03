@@ -32,6 +32,7 @@ function MyListPage() {
     clearBucketList,
   } = useBucketList()
 
+  // Clear search filter when leaving MyListPage
   useEffect(() => {
     return () => setSearchQuery("")
   }, [setSearchQuery])
@@ -84,7 +85,7 @@ function MyListPage() {
     toast.success("Travel plan exported successfully!")
   }
 
-  const averageBudget = bucketList.length > 0 ? (totalBudgetPKR / bucketList.length).toFixed(0) : 0
+  const averageBudget = displayCount > 0 ? (totalBudgetPKR / displayCount).toFixed(0) : 0
 
   return (
     <div className="min-h-screen bg-panel dark:bg-slate-900 transition-colors">
@@ -144,7 +145,7 @@ function MyListPage() {
 
             <div className="text-left sm:text-right font-mono text-xs text-muted-2 dark:text-slate-400">
               <div>Average / country: <span className="font-bold text-ink dark:text-white">{Number(averageBudget).toLocaleString()} PKR</span></div>
-              <div>Saved destinations: <span className="font-bold text-ink dark:text-white">{bucketList.length}</span></div>
+              <div>Showing places: <span className="font-bold text-ink dark:text-white">{displayCount}</span></div>
             </div>
           </div>
         )}
