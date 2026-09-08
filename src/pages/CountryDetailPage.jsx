@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { ArrowLeft, Clock, CloudSun, Plus, StickyNote } from "lucide-react"
 import { Link, useParams } from "react-router-dom"
+import { useQuery } from "@tanstack/react-query"
 import { toast } from "react-toastify"
 
 import Navbar from "@/components/layout/Navbar"
@@ -27,8 +28,6 @@ function Stat({ label, value }) {
 
 function CountryDetail({ code }) {
   const { bucketList, addCountry, updateCountryNote, removeCountry, isCountrySaved } = useBucketList()
-  const [country, setCountry] = useState(null)
-  const [status, setStatus] = useState("loading")
   const [localTime, setLocalTime] = useState("")
 
   const savedItem = bucketList.find((item) => item.code === code)
@@ -37,24 +36,11 @@ function CountryDetail({ code }) {
   const [amount, setAmount] = useState(savedItem?.amount || "")
   const [note, setNote] = useState(savedItem?.note || "")
 
-  useEffect(() => {
-    let cancelled = false
-    setStatus("loading")
-
-    getCountryByCode(code)
-      .then((data) => {
-        if (cancelled) return
-        setCountry(data)
-        setStatus(data ? "idle" : "error")
-      })
-      .catch(() => {
-        if (!cancelled) setStatus("error")
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [code])
+  const { data: country, isLoading, isError } = useQuery({
+    queryKey: ["country", code],
+    queryFn: () => getCountryByCode(code),
+    enabled: Boolean(code),
+  })
 
   useEffect(() => {
     const updateClock = () => {
@@ -101,7 +87,7 @@ function CountryDetail({ code }) {
     toast.info(`${country.name} removed from your list`)
   }
 
-  if (status === "loading") {
+  if (isLoading) {
     return (
       <div className="p-8 text-center font-mono text-sm text-muted-2 dark:text-slate-400">
         Loading country details…
@@ -109,7 +95,7 @@ function CountryDetail({ code }) {
     )
   }
 
-  if (status === "error" || !country) {
+  if (isError || !country) {
     return (
       <p className="text-remove-text-hover text-sm">
         Couldn&rsquo;t load that country. Go back and try another search.
