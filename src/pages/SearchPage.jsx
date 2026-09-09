@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import { Search, Sparkles } from "lucide-react"
 import { useNavigate } from "react-router-dom"
+import { useQuery } from "@tanstack/react-query"
 
 import Navbar from "@/components/layout/Navbar"
 import { Badge } from "@/components/ui/badge"
@@ -19,49 +20,27 @@ const POPULAR_DESTINATIONS = [
 
 function SearchPage() {
   const [query, setQuery] = useState("")
-  const [results, setResults] = useState([])
   const [selectedIndex, setSelectedIndex] = useState(-1)
-  const [status, setStatus] = useState("idle")
 
   const navigate = useNavigate()
   const inputRef = useRef(null)
 
+  const trimmedQuery = query.trim()
+
+  const { data: results = [], isLoading, isError } = useQuery({
+    queryKey: ["searchPageCountries", trimmedQuery],
+    queryFn: () => searchCountries(trimmedQuery),
+    enabled: Boolean(trimmedQuery),
+  })
+
   function handleSearchChange(e) {
     const value = e.target.value
     setQuery(value)
-
-    // Clear state directly in event handler instead of useEffect
-    if (!value.trim()) {
-      setResults([])
-      setStatus("idle")
-      setSelectedIndex(-1)
-    }
+    setSelectedIndex(-1)
   }
-
-  useEffect(() => {
-    const trimmed = query.trim()
-    if (!trimmed) return
-
-    setStatus("loading")
-    const timeoutId = setTimeout(() => {
-      searchCountries(trimmed)
-        .then((data) => {
-          setResults(data || [])
-          setStatus("idle")
-          setSelectedIndex(-1)
-        })
-        .catch(() => {
-          setResults([])
-          setStatus("error")
-        })
-    }, 250)
-
-    return () => clearTimeout(timeoutId)
-  }, [query])
 
   function handleSelectCountry(code) {
     setQuery("")
-    setResults([])
     navigate(`/country/${code}`)
   }
 
@@ -78,7 +57,7 @@ function SearchPage() {
       e.preventDefault()
       handleSelectCountry(results[selectedIndex].code)
     } else if (e.key === "Escape") {
-      setResults([])
+      setQuery("")
       setSelectedIndex(-1)
     }
   }
@@ -111,9 +90,9 @@ function SearchPage() {
             />
           </div>
 
-          {query.trim() !== "" && (
+          {trimmedQuery !== "" && (
             <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-card-border dark:border-slate-700 rounded-2xl shadow-2xl overflow-hidden z-30 animate-in fade-in-50 duration-150">
-              {status === "loading" ? (
+              {isLoading ? (
                 <div className="p-4 text-center font-mono text-sm text-muted-2 dark:text-slate-400">
                   Searching places…
                 </div>
@@ -146,7 +125,7 @@ function SearchPage() {
                     </div>
                   ))}
                 </div>
-              ) : status === "error" ? (
+              ) : isError ? (
                 <div className="p-4 text-center text-sm text-rose-500">
                   Failed to fetch countries. Please try again.
                 </div>
@@ -159,7 +138,7 @@ function SearchPage() {
           )}
         </div>
 
-        {query.trim() === "" && (
+        {trimmedQuery === "" && (
           <div className="space-y-3 mt-8">
             <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-muted-5 dark:text-slate-400">
               <Sparkles className="size-3.5 text-terracotta" />

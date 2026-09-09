@@ -14,7 +14,7 @@ import CountryCard from "@/components/country/CountryCard"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { useBucketList } from "@/context/BucketListContext"
+import { useBucketList } from "@/store/useBucketListStore"
 
 function MyListPage() {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
