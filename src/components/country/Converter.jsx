@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { ArrowRight } from "lucide-react"
+import { useQuery } from "@tanstack/react-query"
 
 import { Input } from "@/components/ui/input"
 import { convertCurrency } from "@/lib/api"
@@ -17,15 +18,21 @@ function Converter({
   autoFocus = false,
 }) {
   const [amount, setAmount] = useState(initialAmount)
-  const [result, setResult] = useState(null)
-  const [rateDate, setRateDate] = useState(null)
-  const [status, setStatus] = useState("idle")
   const [inputError, setInputError] = useState("")
 
   const inputRef = useRef(null)
 
   const numericAmount = Number(amount)
   const isValidAmount = amount !== "" && !Number.isNaN(numericAmount) && !inputError
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["convertCurrency", fromCurrency, toCurrency, numericAmount],
+    queryFn: () => convertCurrency({ amount: numericAmount, from: fromCurrency, to: toCurrency }),
+    enabled: Boolean(toCurrency && isValidAmount),
+  })
+
+  const result = data?.result ?? null
+  const rateDate = data?.date ?? null
 
   useEffect(() => {
     if (autoFocus && !readOnly) {
@@ -58,37 +65,6 @@ function Converter({
       inputRef.current?.blur()
     }
   }
-
-  useEffect(() => {
-    if (!toCurrency || !isValidAmount) {
-      setResult(null)
-      setStatus("idle")
-      return
-    }
-
-    let cancelled = false
-    setStatus("loading")
-
-    const timeoutId = setTimeout(() => {
-      convertCurrency({ amount: numericAmount, from: fromCurrency, to: toCurrency })
-        .then((data) => {
-          if (cancelled) return
-          setResult(data.result)
-          setRateDate(data.date)
-          setStatus("idle")
-        })
-        .catch(() => {
-          if (cancelled) return
-          setResult(null)
-          setStatus("error")
-        })
-    }, 400)
-
-    return () => {
-      cancelled = true
-      clearTimeout(timeoutId)
-    }
-  }, [numericAmount, isValidAmount, fromCurrency, toCurrency])
 
   const isLg = size === "lg"
 
@@ -133,12 +109,12 @@ function Converter({
         </span>
         <ArrowRight className="size-[17px] text-[#c6bfb1]" strokeWidth={2.5} />
         <div className="flex-1 text-right min-w-[120px]">
-          {status === "error" && (
+          {isError && (
             <span className="font-mono text-[13px] text-remove-text-hover">
               Rate unavailable
             </span>
           )}
-          {status !== "error" && result !== null && !inputError && (
+          {!isError && result !== null && !inputError && (
             <>
               <span
                 className={
@@ -154,7 +130,7 @@ function Converter({
               </span>
             </>
           )}
-          {status === "loading" && (
+          {isLoading && (
             <span className="font-mono text-[13px] text-muted-5">…</span>
           )}
         </div>

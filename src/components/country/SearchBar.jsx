@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from "react"
+import { useState } from "react"
 import { Loader2 } from "lucide-react"
+import { useQuery } from "@tanstack/react-query"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,11 +15,18 @@ function SearchBar({
   onSearch,
   placeholder = "Search a country…  (try Japan)",
 }) {
-  const [suggestions, setSuggestions] = useState([])
-  const [suggestStatus, setSuggestStatus] = useState("idle")
   const [isOpen, setIsOpen] = useState(false)
   const [highlightedIndex, setHighlightedIndex] = useState(-1)
-  const lastQueryRef = useRef("")
+
+  const trimmedQuery = value.trim()
+
+  const { data: rawSuggestions = [], isLoading, isError } = useQuery({
+    queryKey: ["searchCountries", trimmedQuery],
+    queryFn: () => searchCountries(trimmedQuery),
+    enabled: Boolean(trimmedQuery),
+  })
+
+  const suggestions = rawSuggestions ? rawSuggestions.slice(0, 8) : []
 
   const handleInputChange = (e) => {
     const val = e.target.value
@@ -26,44 +34,12 @@ function SearchBar({
     setHighlightedIndex(-1)
     if (!val.trim()) {
       setIsOpen(false)
-      setSuggestions([])
+    } else {
+      setIsOpen(true)
     }
   }
 
-  useEffect(() => {
-    const query = value.trim()
-    if (!query) return
-
-    let cancelled = false
-    const timeoutId = setTimeout(() => {
-      if (query === lastQueryRef.current) return
-      lastQueryRef.current = query
-      setSuggestStatus("loading")
-
-      searchCountries(query)
-        .then((countries) => {
-          if (cancelled) return
-          setSuggestions(countries ? countries.slice(0, 8) : [])
-          setSuggestStatus("idle")
-          setIsOpen(true)
-          setHighlightedIndex(-1)
-        })
-        .catch(() => {
-          if (cancelled) return
-          setSuggestions([])
-          setSuggestStatus("error")
-          setIsOpen(true)
-          setHighlightedIndex(-1)
-        })
-    }, 300)
-
-    return () => {
-      cancelled = true
-      clearTimeout(timeoutId)
-    }
-  }, [value])
-
-  const queryLower = value.trim().toLowerCase()
+  const queryLower = trimmedQuery.toLowerCase()
   const filteredSuggestions = suggestions.filter((c) =>
     c.name.toLowerCase().includes(queryLower)
   )
@@ -84,7 +60,7 @@ function SearchBar({
     if (showDropdown && highlightedIndex >= 0 && filteredSuggestions[highlightedIndex]) {
       handleSelect(filteredSuggestions[highlightedIndex])
     } else {
-      commitSearch(value.trim())
+      commitSearch(trimmedQuery)
     }
   }
 
@@ -105,7 +81,7 @@ function SearchBar({
     }
   }
 
-  const showDropdown = isOpen && value.trim() !== ""
+  const showDropdown = isOpen && trimmedQuery !== ""
 
   return (
     <Popover open={showDropdown} onOpenChange={setIsOpen}>
@@ -117,7 +93,7 @@ function SearchBar({
             value={value}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            onFocus={() => value.trim() !== "" && suggestions.length > 0 && setIsOpen(true)}
+            onFocus={() => trimmedQuery !== "" && suggestions.length > 0 && setIsOpen(true)}
             autoComplete="off"
           />
         </PopoverAnchor>
@@ -133,26 +109,26 @@ function SearchBar({
       >
         <Command shouldFilter={false}>
           <CommandList className="max-h-[300px] py-1.5 px-1">
-            {suggestStatus === "loading" && (
+            {isLoading && (
               <div className="flex items-center gap-2 px-4 py-3 text-sm font-mono text-muted-1">
                 <Loader2 className="size-4 animate-spin text-teal" />
                 Searching…
               </div>
             )}
 
-            {suggestStatus === "error" && (
+            {isError && (
               <div className="px-4 py-3 text-sm font-mono text-remove-text-hover">
                 Couldn&rsquo;t reach the countries API.
               </div>
             )}
 
-            {suggestStatus === "idle" && filteredSuggestions.length === 0 && (
+            {!isLoading && !isError && filteredSuggestions.length === 0 && (
               <CommandEmpty className="px-4 py-3 text-sm font-mono text-muted-1">
                 No countries found.
               </CommandEmpty>
             )}
 
-            {suggestStatus === "idle" && filteredSuggestions.length > 0 && (
+            {!isLoading && !isError && filteredSuggestions.length > 0 && (
               <CommandGroup>
                 {filteredSuggestions.map((country, index) => (
                   <CommandItem
