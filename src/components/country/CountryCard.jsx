@@ -1,22 +1,36 @@
 import { useState } from "react"
 import { Check, RefreshCw, StickyNote, Trash2 } from "lucide-react"
 import { Link } from "react-router-dom"
+import { useQueryClient } from "@tanstack/react-query"
 
 import Converter from "@/components/country/Converter"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { getCountryByCode } from "@/lib/api"
+import { countryKeys } from "@/lib/queryKeys"
 import { getCurrencySymbol, getFlagUrl } from "@/lib/utils"
 import { useBucketList } from "@/store/useBucketListStore"
 
 function CountryCard({ country, mode = "add", onUpdate, onRemove }) {
   const { updateCountryNote } = useBucketList()
+  const queryClient = useQueryClient()
 
   const [currentAmount, setCurrentAmount] = useState(country?.amount || "")
   const [note, setNote] = useState(country?.note || "")
   const [showNoteInput, setShowNoteInput] = useState(Boolean(country?.note))
 
   if (!country || !country.code) return null
+
+  // Prefetch country detail into TanStack cache on hover/focus
+  function handlePrefetch() {
+    if (!country?.code) return
+    queryClient.prefetchQuery({
+      queryKey: countryKeys.detail(country.code),
+      queryFn: () => getCountryByCode(country.code),
+      staleTime: 1000 * 60 * 10, // Cache valid for 10 minutes
+    })
+  }
 
   function handleBlurNote() {
     if (note !== country.note) {
@@ -28,7 +42,6 @@ function CountryCard({ country, mode = "add", onUpdate, onRemove }) {
     onUpdate?.(country, currentAmount)
   }
 
-  // Enter press karne par note auto-save hoga
   function handleKeyDownNote(e) {
     if (e.key === "Enter") {
       e.preventDefault()
@@ -46,6 +59,8 @@ function CountryCard({ country, mode = "add", onUpdate, onRemove }) {
         <div className="flex items-start justify-between gap-3">
           <Link
             to={`/country/${country.code}`}
+            onMouseEnter={handlePrefetch}
+            onFocus={handlePrefetch}
             className="flex items-center gap-3 no-underline group"
           >
             <img
@@ -135,6 +150,8 @@ function CountryCard({ country, mode = "add", onUpdate, onRemove }) {
           <div className="pt-2 border-t border-card-border dark:border-slate-700/60 flex items-center justify-between gap-2">
             <Link
               to={`/country/${country.code}`}
+              onMouseEnter={handlePrefetch}
+              onFocus={handlePrefetch}
               className="text-xs font-semibold text-teal dark:text-teal-300 hover:underline no-underline"
             >
               View Details &rarr;
