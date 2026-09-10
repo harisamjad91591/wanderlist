@@ -1,20 +1,35 @@
-import { clsx } from "clsx"
+import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
-export function cn(...inputs) {
+/**
+ * Merges conditional CSS class names using `clsx` and resolves Tailwind conflicts via `twMerge`.
+ * 
+ * @param inputs - Array of class names, objects, or expressions
+ * @returns Consolidated Tailwind CSS class string
+ */
+export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs))
 }
 
-// Builds a flag image URL from a 2-letter country code. No API call
-// needed for this — flagcdn serves flags directly by ISO code.
-export function getFlagUrl(countryCode) {
+/**
+ * Constructs flag image graphic URL from standard 2-letter ISO country code.
+ * 
+ * @param countryCode - 2-letter ISO country code
+ * @returns Asset URL hosted on FlagCDN
+ */
+export function getFlagUrl(countryCode: string): string {
+  if (!countryCode) return ""
   return `https://flagcdn.com/w320/${countryCode.toLowerCase()}.png`
 }
 
-// The countries API gives us a currency CODE ("JPY"), not a symbol
-// ("¥"). The browser already knows how to map one to the other, so
-// no extra data file or package is needed for this.
-export function getCurrencySymbol(currencyCode) {
+/**
+ * Resolves localized currency symbol (e.g. "USD" -> "$") using standard browser Intl API.
+ * 
+ * @param currencyCode - ISO 4217 currency code string
+ * @returns Extracted currency symbol or original code as fallback
+ */
+export function getCurrencySymbol(currencyCode?: string | null): string {
+  if (!currencyCode) return ""
   try {
     const parts = new Intl.NumberFormat("en", {
       style: "currency",
