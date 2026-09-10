@@ -21,7 +21,7 @@ export type CardMode = "add" | "remove"
 export interface CountryCardProps {
   /** Country entity extended with optional budget allocation and travel notes. */
   country: Country & { amount?: string; note?: string }
-  /** Card behavior mode: "add" for search catalog view or "remove" for bucket list page. */
+  /** Card behavior mode: "add" for search view or "remove" for bucket list page. */
   mode?: CardMode
   /** Callback fired when user triggers budget persistence. */
   onUpdate?: (country: Country, amount: string) => void
@@ -77,6 +77,10 @@ export default function CountryCard({
         <div className="flex items-start justify-between gap-3">
           <Link
             to={`/country/${country.code}`}
+            state={{
+              flagUrl: getFlagUrl(country.code),
+              countryName: country.name,
+            }}
             className="flex items-center gap-3 no-underline group"
           >
             <img
@@ -166,6 +170,10 @@ export default function CountryCard({
           <div className="pt-2 border-t border-card-border dark:border-slate-700/60 flex items-center justify-between gap-2">
             <Link
               to={`/country/${country.code}`}
+              state={{
+                flagUrl: getFlagUrl(country.code),
+                countryName: country.name,
+              }}
               className="text-xs font-semibold text-teal dark:text-teal-300 hover:underline no-underline"
             >
               View Details &rarr;
