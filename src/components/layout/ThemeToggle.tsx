@@ -2,9 +2,12 @@ import { Check, Moon, Palette, Sun } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { ACCENT_COLORS, useTheme } from "@/store/useThemeStore"
+import { ACCENT_COLORS, useTheme, type AccentColorId } from "@/store/useThemeStore"
 
-function ThemeToggle() {
+/**
+ * Interactive theme customizer popover for switching light/dark appearance modes and CSS accent themes.
+ */
+export default function ThemeToggle() {
   const { theme, accent, setTheme, setAccent } = useTheme()
 
   return (
@@ -69,7 +72,7 @@ function ThemeToggle() {
                 <button
                   key={color.id}
                   type="button"
-                  onClick={() => setAccent(color.id)}
+                  onClick={() => setAccent(color.id as AccentColorId)}
                   title={color.name}
                   style={{ backgroundColor: color.hex }}
                   className={`size-7 rounded-full flex items-center justify-center transition-transform cursor-pointer border-none shadow-2xs ${
@@ -78,7 +81,7 @@ function ThemeToggle() {
                 >
                   {isSelected && <Check className="size-3.5 text-white stroke-[3]" />}
                 </button>
-              )
+              );
             })}
           </div>
         </div>
@@ -86,5 +89,3 @@ function ThemeToggle() {
     </Popover>
   )
 }
-
-export default ThemeToggle

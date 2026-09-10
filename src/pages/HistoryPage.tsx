@@ -1,31 +1,42 @@
 import { useState } from "react"
-import { ChevronDown, ChevronUp, History, Trash2 } from "lucide-react"
+import { ChevronDown, ChevronUp, History as HistoryIcon, Trash2 } from "lucide-react"
 import { toast } from "react-toastify"
 
 import Navbar from "@/components/layout/Navbar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useBucketList } from "@/store/useBucketListStore"
+import type { HistoryLog } from "@/types"
 
-function HistoryPage() {
+/**
+ * Grouped country history item structure.
+ */
+export interface GroupedHistory {
+  countryName: string
+  logs: HistoryLog[]
+  latestTimestamp?: string
+}
+
+/**
+ * Page displaying audit history logs grouped by country with collapsible accordion details.
+ */
+export default function HistoryPage() {
   const { history, clearHistory } = useBucketList()
-  const [openCountries, setOpenCountries] = useState({})
+  const [openCountries, setOpenCountries] = useState<Record<string, boolean>>({})
 
-  function handleClearHistory() {
+  const handleClearHistory = (): void => {
     clearHistory()
     toast.info("Activity history log cleared")
   }
 
-  // Click karne par dropdown toggle (Show / Hide) karna
-  function toggleDropdown(countryName) {
+  const toggleDropdown = (countryName: string): void => {
     setOpenCountries((prev) => ({
       ...prev,
       [countryName]: !prev[countryName],
     }))
   }
 
-  // Same country ki multiple entries ko group karna
-  const groupedHistoryMap = history.reduce((acc, log) => {
+  const groupedHistoryMap = history.reduce<Record<string, HistoryLog[]>>((acc, log) => {
     const name = log.countryName || "General Activity"
     if (!acc[name]) {
       acc[name] = []
@@ -34,12 +45,13 @@ function HistoryPage() {
     return acc
   }, {})
 
-  // Grouped entries list
-  const groupedHistoryList = Object.keys(groupedHistoryMap).map((countryName) => ({
-    countryName,
-    logs: groupedHistoryMap[countryName],
-    latestTimestamp: groupedHistoryMap[countryName][0]?.timestamp,
-  }))
+  const groupedHistoryList: GroupedHistory[] = Object.keys(groupedHistoryMap).map(
+    (countryName) => ({
+      countryName,
+      logs: groupedHistoryMap[countryName],
+      latestTimestamp: groupedHistoryMap[countryName][0]?.timestamp,
+    })
+  )
 
   return (
     <div className="min-h-screen bg-panel dark:bg-slate-900 transition-colors">
@@ -81,7 +93,6 @@ function HistoryPage() {
                   key={countryName}
                   className="rounded-2xl bg-white dark:bg-slate-800 border border-card-border dark:border-slate-700 shadow-sm overflow-hidden transition-all"
                 >
-                  {/* Single Accordion Card Header (Click to Open/Close) */}
                   <button
                     type="button"
                     onClick={() => toggleDropdown(countryName)}
@@ -89,7 +100,7 @@ function HistoryPage() {
                   >
                     <div className="flex items-center gap-3">
                       <div className="p-2.5 rounded-xl bg-teal-ghost dark:bg-slate-700 text-teal dark:text-teal-300 shrink-0">
-                        <History className="size-5" />
+                        <HistoryIcon className="size-5" />
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
@@ -118,7 +129,6 @@ function HistoryPage() {
                     </div>
                   </button>
 
-                  {/* Dropdown Content - List of all activities for this country */}
                   {isOpen && (
                     <div className="border-t border-card-border dark:border-slate-700/60 bg-panel/50 dark:bg-slate-900/40 p-4 space-y-3 animate-in fade-in duration-200">
                       {logs.map((log) => (
@@ -164,5 +174,3 @@ function HistoryPage() {
     </div>
   )
 }
-
-export default HistoryPage

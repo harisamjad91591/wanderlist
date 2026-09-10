@@ -5,7 +5,44 @@ import { Input } from "@/components/ui/input"
 import { convertCurrency } from "@/lib/api"
 import { cn } from "@/lib/utils"
 
-function Converter({
+/**
+ * Visual size variants for the currency converter widget.
+ */
+export type ConverterSize = "sm" | "lg"
+
+/**
+ * Async request state for exchange rate fetching.
+ */
+export type ConversionStatus = "idle" | "loading" | "error"
+
+/**
+ * Props contract for the Converter component.
+ */
+export interface ConverterProps {
+  /** Base currency code (Defaults to "PKR"). */
+  fromCurrency?: string
+  /** Target currency ISO code. */
+  toCurrency: string
+  /** Sizing variant controlling padding and font scale. */
+  size?: ConverterSize
+  /** Optional flag to render currency rate timestamp metadata. */
+  showRateNote?: boolean
+  /** Initial numeric string value. */
+  initialAmount?: string
+  /** Disables editing inputs when set to true. */
+  readOnly?: boolean
+  /** Callback function triggered on input value changes. */
+  onAmountChange?: (value: string) => void
+  /** Callback fired when pressing Enter key inside amount input. */
+  onEnterPress?: () => void
+  /** Automatically focuses amount input on mounting. */
+  autoFocus?: boolean
+}
+
+/**
+ * Inline currency conversion component with debounced API rate calculation and numeric validation.
+ */
+export default function Converter({
   fromCurrency = "PKR",
   toCurrency,
   size = "sm",
@@ -15,17 +52,18 @@ function Converter({
   onAmountChange,
   onEnterPress,
   autoFocus = false,
-}) {
-  const [amount, setAmount] = useState(initialAmount)
-  const [result, setResult] = useState(null)
-  const [rateDate, setRateDate] = useState(null)
-  const [status, setStatus] = useState("idle")
-  const [inputError, setInputError] = useState("")
+}: ConverterProps) {
+  const [amount, setAmount] = useState<string>(initialAmount)
+  const [result, setResult] = useState<number | null>(null)
+  const [rateDate, setRateDate] = useState<string | null>(null)
+  const [status, setStatus] = useState<ConversionStatus>("idle")
+  const [inputError, setInputError] = useState<string>("")
 
-  const inputRef = useRef(null)
+  const inputRef = useRef<HTMLInputElement | null>(null)
 
-  const numericAmount = Number(amount)
-  const isValidAmount = amount !== "" && !Number.isNaN(numericAmount) && !inputError
+  const numericAmount: number = Number(amount)
+  const isValidAmount: boolean =
+    amount !== "" && !Number.isNaN(numericAmount) && !inputError
 
   useEffect(() => {
     if (autoFocus && !readOnly) {
@@ -36,7 +74,10 @@ function Converter({
     }
   }, [autoFocus, readOnly])
 
-  function handleAmountChange(event) {
+  /**
+   * Handles user input with instant regex/number validation checks.
+   */
+  const handleAmountChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     const value = event.target.value
     setAmount(value)
 
@@ -51,7 +92,7 @@ function Converter({
     onAmountChange?.(value)
   }
 
-  function handleKeyDown(event) {
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void => {
     if (event.key === "Enter" && onEnterPress && !inputError) {
       event.preventDefault()
       onEnterPress()
@@ -59,6 +100,9 @@ function Converter({
     }
   }
 
+  /**
+   * Debounces API rate conversion requests by 400ms to eliminate redundant network overhead.
+   */
   useEffect(() => {
     if (!toCurrency || !isValidAmount) {
       setResult(null)
@@ -90,7 +134,7 @@ function Converter({
     }
   }, [numericAmount, isValidAmount, fromCurrency, toCurrency])
 
-  const isLg = size === "lg"
+  const isLg: boolean = size === "lg"
 
   return (
     <div
@@ -174,5 +218,3 @@ function Converter({
     </div>
   )
 }
-
-export default Converter

@@ -15,9 +15,13 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useBucketList } from "@/store/useBucketListStore"
+import type { Country, SortOption } from "@/types"
 
-function MyListPage() {
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
+/**
+ * Page displaying saved bucket list places, aggregate total budget calculations, text export, filtering, and sorting.
+ */
+export default function MyListPage() {
+  const [isConfirmOpen, setIsConfirmOpen] = useState<boolean>(false)
   const {
     bucketList,
     filteredBucketList,
@@ -36,23 +40,23 @@ function MyListPage() {
     return () => setSearchQuery("")
   }, [setSearchQuery])
 
-  function handleUpdate(country, amount) {
+  const handleUpdate = (country: Country, amount: string): void => {
     addCountry(country, amount)
-    toast.info(`${country.name}'s budget updated to ${amount || 0} PKR`)
+    toast.info(`${country.name}'s budget updated to ${amount || "0"} PKR`)
   }
 
-  function handleRemove(country) {
+  const handleRemove = (country: Country): void => {
     removeCountry(country.code)
     toast.info(`${country.name} removed from your list`)
   }
 
-  function handleConfirmClear() {
+  const handleConfirmClear = (): void => {
     clearBucketList()
     setIsConfirmOpen(false)
     toast.info("All saved places removed from your list")
   }
 
-  function handleExportPlan() {
+  const handleExportPlan = (): void => {
     if (bucketList.length === 0) return
 
     let content = `=======================================\n`
@@ -84,7 +88,8 @@ function MyListPage() {
     toast.success("Travel plan exported successfully!")
   }
 
-  const averageBudget = bucketList.length > 0 ? (totalBudgetPKR / bucketList.length).toFixed(0) : 0
+  const averageBudget: string =
+    bucketList.length > 0 ? (totalBudgetPKR / bucketList.length).toFixed(0) : "0"
 
   return (
     <div className="min-h-screen bg-panel dark:bg-slate-900 transition-colors">
@@ -157,7 +162,7 @@ function MyListPage() {
                 type="text"
                 placeholder="Filter saved places (e.g. A)…"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
                 className="pl-11 pr-4 bg-white dark:bg-slate-800 border border-card-border dark:border-slate-700 rounded-xl"
               />
             </div>
@@ -166,7 +171,7 @@ function MyListPage() {
               <ArrowUpDown className="size-4 text-muted-2" />
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSortBy(e.target.value as SortOption)}
                 className="px-3 py-2 text-xs font-semibold rounded-xl bg-white dark:bg-slate-800 border border-card-border dark:border-slate-700 text-ink dark:text-white focus:outline-none focus:ring-1 focus:ring-teal cursor-pointer w-full sm:w-auto"
               >
                 <option value="default">Sort: Recently Added</option>
@@ -229,7 +234,7 @@ function MyListPage() {
                 Cancel
               </Button>
               <Button
-                variant="remove"
+                variant="destructive"
                 size="sm"
                 onClick={handleConfirmClear}
                 className="rounded-xl px-4 text-xs bg-rose-600 text-white hover:bg-rose-700 border-none"
@@ -243,5 +248,3 @@ function MyListPage() {
     </div>
   )
 }
-
-export default MyListPage
