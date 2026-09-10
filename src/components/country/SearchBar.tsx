@@ -7,20 +7,43 @@ import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover"
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command"
 import { searchCountries } from "@/lib/api"
 import { getFlagUrl } from "@/lib/utils"
+import type { Country } from "@/types"
 
-function SearchBar({
+/**
+ * Fetching status for search autocomplete queries.
+ */
+export type SearchStatus = "idle" | "loading" | "error"
+
+/**
+ * Props contract for the SearchBar component.
+ */
+export interface SearchBarProps {
+  /** Current controlled input value. */
+  value: string
+  /** Callback fired on input change. */
+  onChange: (value: string) => void
+  /** Callback fired when committing a search query or selecting a suggestion. */
+  onSearch: (query: string) => void
+  /** Custom input placeholder string. */
+  placeholder?: string
+}
+
+/**
+ * Accessible search input component providing live API country suggestions, keyboard navigation, and popover display.
+ */
+export default function SearchBar({
   value,
   onChange,
   onSearch,
   placeholder = "Search a country…  (try Japan)",
-}) {
-  const [suggestions, setSuggestions] = useState([])
-  const [suggestStatus, setSuggestStatus] = useState("idle")
-  const [isOpen, setIsOpen] = useState(false)
-  const [highlightedIndex, setHighlightedIndex] = useState(-1)
-  const lastQueryRef = useRef("")
+}: SearchBarProps) {
+  const [suggestions, setSuggestions] = useState<Country[]>([])
+  const [suggestStatus, setSuggestStatus] = useState<SearchStatus>("idle")
+  const [isOpen, setIsOpen] = useState<boolean>(false)
+  const [highlightedIndex, setHighlightedIndex] = useState<number>(-1)
+  const lastQueryRef = useRef<string>("")
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const val = e.target.value
     onChange(val)
     setHighlightedIndex(-1)
@@ -30,6 +53,9 @@ function SearchBar({
     }
   }
 
+  /**
+   * Debounces API queries and syncs dynamic suggestion dropdown results.
+   */
   useEffect(() => {
     const query = value.trim()
     if (!query) return
@@ -63,23 +89,23 @@ function SearchBar({
     }
   }, [value])
 
-  const queryLower = value.trim().toLowerCase()
-  const filteredSuggestions = suggestions.filter((c) =>
+  const queryLower: string = value.trim().toLowerCase()
+  const filteredSuggestions: Country[] = suggestions.filter((c) =>
     c.name.toLowerCase().includes(queryLower)
   )
 
-  function commitSearch(query) {
+  const commitSearch = (query: string): void => {
     setIsOpen(false)
     setHighlightedIndex(-1)
     onSearch(query)
   }
 
-  function handleSelect(country) {
+  const handleSelect = (country: Country): void => {
     onChange(country.name)
     commitSearch(country.name)
   }
 
-  function handleSubmit(event) {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
     event.preventDefault()
     if (showDropdown && highlightedIndex >= 0 && filteredSuggestions[highlightedIndex]) {
       handleSelect(filteredSuggestions[highlightedIndex])
@@ -88,7 +114,10 @@ function SearchBar({
     }
   }
 
-  function handleKeyDown(event) {
+  /**
+   * Accessible keyboard navigation handler for ArrowUp, ArrowDown, and Escape keys.
+   */
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void => {
     if (!showDropdown || filteredSuggestions.length === 0) return
 
     if (event.key === "ArrowDown") {
@@ -105,7 +134,7 @@ function SearchBar({
     }
   }
 
-  const showDropdown = isOpen && value.trim() !== ""
+  const showDropdown: boolean = isOpen && value.trim() !== ""
 
   return (
     <Popover open={showDropdown} onOpenChange={setIsOpen}>
@@ -129,7 +158,7 @@ function SearchBar({
 
       <PopoverContent
         className="w-[var(--radix-popover-trigger-width)] p-0 border border-card-border overflow-hidden bg-white rounded-[14px] shadow-[0_14px_34px_rgba(20,45,55,0.14)]"
-        onOpenAutoFocus={(e) => e.preventDefault()}
+        onOpenAutoFocus={(e: Event) => e.preventDefault()}
       >
         <Command shouldFilter={false}>
           <CommandList className="max-h-[300px] py-1.5 px-1">
@@ -189,5 +218,3 @@ function SearchBar({
     </Popover>
   )
 }
-
-export default SearchBar

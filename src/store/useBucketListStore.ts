@@ -1,8 +1,38 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
+import type { BucketListItem, Country, HistoryLog, HistoryType, SortOption } from "@/types"
 
-export const useBucketListStore = create(
-  // `persist` middleware automatic LocalStorage handle karta hai (no manual useEffect needed)
+/**
+ * State properties stored in Zustand bucket list store.
+ */
+export interface BucketListState {
+  bucketList: BucketListItem[]
+  history: HistoryLog[]
+  searchQuery: string
+  sortBy: SortOption
+}
+
+/**
+ * Action signatures and store manipulators.
+ */
+export interface BucketListActions {
+  setSearchQuery: (query: string) => void
+  setSortBy: (sortBy: SortOption) => void
+  addHistoryLog: (type: HistoryType, countryName: string, details: string) => void
+  addCountry: (country: Country, amount?: string) => void
+  updateCountryNote: (code: string, note: string) => void
+  removeCountry: (code: string) => void
+  clearBucketList: () => void
+  clearHistory: () => void
+  isCountrySaved: (code: string) => boolean
+}
+
+export type BucketListStore = BucketListState & BucketListActions
+
+/**
+ * Global Zustand store managing bucket list entities, persistence, and audit logging.
+ */
+export const useBucketListStore = create<BucketListStore>()(
   persist(
     (set, get) => ({
       // --- STATE ---
@@ -11,15 +41,17 @@ export const useBucketListStore = create(
       searchQuery: "",
       sortBy: "default",
 
-      // --- ACTIONS / SETTERS ---
+      // --- ACTIONS ---
       setSearchQuery: (query) => set({ searchQuery: query }),
       setSortBy: (sortBy) => set({ sortBy }),
 
-      // Activity History Log Add karna
+      /**
+       * Appends a structured audit entry to activity history.
+       */
       addHistoryLog: (type, countryName, details) => {
         if (!countryName) return
-        const newEntry = {
-          id: Date.now().toString() + "-" + Math.random().toString(36).substring(2, 7),
+        const newEntry: HistoryLog = {
+          id: `${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
           type,
           countryName,
           details,
@@ -28,20 +60,24 @@ export const useBucketListStore = create(
             timeStyle: "short",
           }),
         }
-        // Zustand `set` method: previous state le kar new history return karta hai
         set((state) => ({ history: [newEntry, ...state.history] }))
       },
 
-      // Country Add / Budget Update karna
+      /**
+       * Inserts a country or modifies budget allocation with automatic audit logging.
+       */
       addCountry: (country, amount) => {
         if (!country || !country.code) return
-        const { bucketList, addHistoryLog } = get() // `get()` se current state access hoti hai
+        const { bucketList, addHistoryLog } = get()
         const existingItem = bucketList.find((item) => item.code === country.code)
 
         if (!existingItem) {
-          addHistoryLog("ADD", country.name, `Added to Bucket List with budget ${amount || 0} PKR`)
+          addHistoryLog("ADD", country.name, `Added to Bucket List with budget ${amount || "0"} PKR`)
           set((state) => ({
-            bucketList: [...state.bucketList, { ...country, amount: amount || "0", note: "" }],
+            bucketList: [
+              ...state.bucketList,
+              { ...country, amount: amount || "0", note: "" },
+            ],
           }))
         } else {
           const oldAmount = existingItem.amount || "0"
@@ -57,13 +93,17 @@ export const useBucketListStore = create(
 
           set((state) => ({
             bucketList: state.bucketList.map((item) =>
-              item.code === country.code ? { ...item, ...country, amount: newAmount } : item
+              item.code === country.code
+                ? { ...item, ...country, amount: newAmount }
+                : item
             ),
           }))
         }
       },
 
-      // Travel Notes update karna
+      /**
+       * Updates custom notes attached to a saved country.
+       */
       updateCountryNote: (code, note) => {
         if (!code) return
         const { bucketList, addHistoryLog } = get()
@@ -79,7 +119,9 @@ export const useBucketListStore = create(
         }
       },
 
-      // Country Remove karna
+      /**
+       * Evicts a country from state by ISO code.
+       */
       removeCountry: (code) => {
         if (!code) return
         const { bucketList, addHistoryLog } = get()
@@ -92,7 +134,9 @@ export const useBucketListStore = create(
         }))
       },
 
-      // Clear All Saved Places
+      /**
+       * Empties saved list with audit notification.
+       */
       clearBucketList: () => {
         const { bucketList, addHistoryLog } = get()
         if (bucketList.length > 0) {
@@ -101,29 +145,34 @@ export const useBucketListStore = create(
         set({ bucketList: [] })
       },
 
-      // Clear History Log
+      /**
+       * Clears history logs.
+       */
       clearHistory: () => set({ history: [] }),
 
-      // Helper: Check if country is saved
+      /**
+       * Evaluates saved status by code.
+       */
       isCountrySaved: (code) => {
         if (!code) return false
         return get().bucketList.some((item) => item.code === code)
       },
     }),
     {
-      name: "wanderlist:bucket-list-zustand", // LocalStorage Key Name
+      name: "wanderlist:bucket-list-zustand",
       partialize: (state) => ({ bucketList: state.bucketList, history: state.history }),
     }
   )
 )
 
-// Helper Custom Hook: Taakay components mein same pehle jaisa `useBucketList()` interface mile
+/**
+ * Higher-order custom selector hook providing derived filtering, sorting, and aggregate calculations.
+ */
 export function useBucketList() {
   const store = useBucketListStore()
 
-  // Dynamic Filtering + Sorting Logic
   const queryLower = store.searchQuery.trim().toLowerCase()
-  let processedList = store.bucketList.filter((country) => {
+  let processedList: BucketListItem[] = store.bucketList.filter((country) => {
     if (!queryLower) return true
     return country?.name?.toLowerCase().startsWith(queryLower)
   })
@@ -138,8 +187,10 @@ export function useBucketList() {
     processedList = [...processedList].sort((a, b) => Number(a.amount || 0) - Number(b.amount || 0))
   }
 
-  // Total Budget (PKR) Calculation
-  const totalBudgetPKR = store.bucketList.reduce((sum, item) => sum + Number(item.amount || 0), 0)
+  const totalBudgetPKR = store.bucketList.reduce(
+    (sum, item) => sum + Number(item.amount || 0),
+    0
+  )
 
   return {
     ...store,

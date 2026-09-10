@@ -1,18 +1,32 @@
 import { useEffect, useState } from "react"
 import { ArrowLeft, Clock, CloudSun, Plus, StickyNote } from "lucide-react"
-import { Link, useParams } from "react-router-dom"
+import { Link, useLocation, useParams } from "react-router-dom"
 import { toast } from "react-toastify"
 
 import Navbar from "@/components/layout/Navbar"
 import Converter from "@/components/country/Converter"
+import CountryFlagLoader from "@/components/country/CountryFlagLoader"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { getCountryByCode } from "@/lib/api"
 import { getCurrencySymbol, getFlagUrl } from "@/lib/utils"
 import { useBucketList } from "@/store/useBucketListStore"
+import type { Country } from "@/types"
 
-function Stat({ label, value }) {
+export type DetailStatus = "loading" | "idle" | "error"
+
+export interface StatProps {
+  label: string
+  value?: string | number | null
+}
+
+export interface CountryNavigationState {
+  flagUrl?: string
+  countryName?: string
+}
+
+function Stat({ label, value }: StatProps) {
   return (
     <div>
       <div className="font-mono text-[10.5px] tracking-[0.12em] uppercase text-muted-5 mb-[3px]">
@@ -25,17 +39,23 @@ function Stat({ label, value }) {
   )
 }
 
-function CountryDetail({ code }) {
+function CountryDetail({ code }: { code: string }) {
+  const location = useLocation()
+  const navState = (location.state as CountryNavigationState) || {}
+
+  const activeFlagUrl = navState.flagUrl || (code ? getFlagUrl(code) : null)
+  const activeCountryName = navState.countryName
+
   const { bucketList, addCountry, updateCountryNote, removeCountry, isCountrySaved } = useBucketList()
-  const [country, setCountry] = useState(null)
-  const [status, setStatus] = useState("loading")
-  const [localTime, setLocalTime] = useState("")
+  const [country, setCountry] = useState<Country | null>(null)
+  const [status, setStatus] = useState<DetailStatus>("loading")
+  const [localTime, setLocalTime] = useState<string>("")
 
   const savedItem = bucketList.find((item) => item.code === code)
-  const isSaved = isCountrySaved(code)
+  const isSaved: boolean = isCountrySaved(code)
 
-  const [amount, setAmount] = useState(savedItem?.amount || "")
-  const [note, setNote] = useState(savedItem?.note || "")
+  const [amount, setAmount] = useState<string>(savedItem?.amount || "")
+  const [note, setNote] = useState<string>(savedItem?.note || "")
 
   useEffect(() => {
     let cancelled = false
@@ -57,7 +77,7 @@ function CountryDetail({ code }) {
   }, [code])
 
   useEffect(() => {
-    const updateClock = () => {
+    const updateClock = (): void => {
       const now = new Date()
       setLocalTime(
         now.toLocaleTimeString("en-US", {
@@ -72,7 +92,7 @@ function CountryDetail({ code }) {
     return () => clearInterval(timer)
   }, [])
 
-  function handleAddOrUpdate() {
+  const handleAddOrUpdate = (): void => {
     if (!country) return
     const wasAlreadySaved = isCountrySaved(country.code)
 
@@ -88,14 +108,14 @@ function CountryDetail({ code }) {
     }
   }
 
-  function handleKeyDownNote(e) {
+  const handleKeyDownNote = (e: React.KeyboardEvent<HTMLInputElement>): void => {
     if (e.key === "Enter") {
       e.preventDefault()
       handleAddOrUpdate()
     }
   }
 
-  function handleRemove() {
+  const handleRemove = (): void => {
     if (!country) return
     removeCountry(country.code)
     toast.info(`${country.name} removed from your list`)
@@ -103,9 +123,14 @@ function CountryDetail({ code }) {
 
   if (status === "loading") {
     return (
-      <div className="p-8 text-center font-mono text-sm text-muted-2 dark:text-slate-400">
-        Loading country details…
-      </div>
+      <Card className="rounded-[20px] bg-white dark:bg-slate-800 border-card-border dark:border-slate-700 shadow-md">
+        <CardContent className="p-6">
+          <CountryFlagLoader
+            flagUrl={activeFlagUrl}
+            countryName={activeCountryName}
+          />
+        </CardContent>
+      </Card>
     )
   }
 
@@ -167,7 +192,7 @@ function CountryDetail({ code }) {
         {country.currency && (
           <div>
             <Converter
-              key={`${country.code}-${savedItem?.amount || ''}`}
+              key={`${country.code}-${savedItem?.amount || ""}`}
               fromCurrency="PKR"
               toCurrency={country.currency}
               size="lg"
@@ -189,7 +214,7 @@ function CountryDetail({ code }) {
             type="text"
             placeholder="e.g. Visit Mount Fuji, try street food, buy souvenirs…"
             value={note}
-            onChange={(e) => setNote(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNote(e.target.value)}
             onKeyDown={handleKeyDownNote}
             className="w-full text-sm px-4 py-3 rounded-xl bg-panel dark:bg-slate-900 border border-card-border dark:border-slate-700 text-ink dark:text-white focus:outline-none focus:ring-2 focus:ring-teal/30"
           />
@@ -198,16 +223,16 @@ function CountryDetail({ code }) {
         <div className="flex flex-col sm:flex-row gap-3 pt-2">
           {isSaved ? (
             <>
-              <Button variant="add" onClick={handleAddOrUpdate}>
+              <Button variant="primary" onClick={handleAddOrUpdate}>
                 Update details
               </Button>
-              <Button variant="remove" onClick={handleRemove}>
+              <Button variant="destructive" onClick={handleRemove}>
                 Remove from list
               </Button>
             </>
           ) : (
-            <Button variant="add" onClick={handleAddOrUpdate}>
-              <Plus className="size-[19px]" strokeWidth={3} />
+            <Button variant="primary" onClick={handleAddOrUpdate}>
+              <Plus className="size-[19px] mr-1" strokeWidth={3} />
               Add to my list
             </Button>
           )}
@@ -217,8 +242,8 @@ function CountryDetail({ code }) {
   )
 }
 
-function CountryDetailPage() {
-  const { code } = useParams()
+export default function CountryDetailPage() {
+  const { code } = useParams<{ code: string }>()
 
   return (
     <div className="min-h-screen bg-panel dark:bg-slate-900 transition-colors">
@@ -233,10 +258,8 @@ function CountryDetailPage() {
           Back to search
         </Link>
 
-        <CountryDetail key={code} code={code} />
+        {code ? <CountryDetail key={code} code={code} /> : null}
       </div>
     </div>
   )
 }
-
-export default CountryDetailPage

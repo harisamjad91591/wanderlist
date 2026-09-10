@@ -8,36 +8,67 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { getCurrencySymbol, getFlagUrl } from "@/lib/utils"
 import { useBucketList } from "@/store/useBucketListStore"
+import type { Country } from "@/types"
 
-function CountryCard({ country, mode = "add", onUpdate, onRemove }) {
+/**
+ * Display modes supported by the CountryCard component.
+ */
+export type CardMode = "add" | "remove"
+
+/**
+ * Props contract for the CountryCard component.
+ */
+export interface CountryCardProps {
+  /** Country entity extended with optional budget allocation and travel notes. */
+  country: Country & { amount?: string; note?: string }
+  /** Card behavior mode: "add" for search view or "remove" for bucket list page. */
+  mode?: CardMode
+  /** Callback fired when user triggers budget persistence. */
+  onUpdate?: (country: Country, amount: string) => void
+  /** Callback fired when user removes the country from saved places. */
+  onRemove?: (country: Country) => void
+}
+
+/**
+ * CountryCard renders individual country metrics, currency conversion, note inputs, and management actions.
+ */
+export default function CountryCard({
+  country,
+  mode = "add",
+  onUpdate,
+  onRemove,
+}: CountryCardProps) {
   const { updateCountryNote } = useBucketList()
 
-  const [currentAmount, setCurrentAmount] = useState(country?.amount || "")
-  const [note, setNote] = useState(country?.note || "")
-  const [showNoteInput, setShowNoteInput] = useState(Boolean(country?.note))
+  const [currentAmount, setCurrentAmount] = useState<string>(country?.amount || "")
+  const [note, setNote] = useState<string>(country?.note || "")
+  const [showNoteInput, setShowNoteInput] = useState<boolean>(Boolean(country?.note))
 
   if (!country || !country.code) return null
 
-  function handleBlurNote() {
+  const handleBlurNote = (): void => {
     if (note !== country.note) {
       updateCountryNote(country.code, note)
     }
   }
 
-  function handleSaveAmount() {
+  const handleSaveAmount = (): void => {
     onUpdate?.(country, currentAmount)
   }
 
-  // Enter press karne par note auto-save hoga
-  function handleKeyDownNote(e) {
+  /**
+   * Persists travel note on Enter key down and releases DOM focus.
+   */
+  const handleKeyDownNote = (e: React.KeyboardEvent<HTMLInputElement>): void => {
     if (e.key === "Enter") {
       e.preventDefault()
       handleBlurNote()
-      e.target.blur()
+      e.currentTarget.blur()
     }
   }
 
-  const isAmountChanged = String(currentAmount).trim() !== String(country.amount || "").trim()
+  const isAmountChanged: boolean =
+    String(currentAmount).trim() !== String(country.amount || "").trim()
 
   return (
     <Card className="rounded-[18px] bg-white dark:bg-slate-800 border-card-border dark:border-slate-700 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
@@ -46,6 +77,10 @@ function CountryCard({ country, mode = "add", onUpdate, onRemove }) {
         <div className="flex items-start justify-between gap-3">
           <Link
             to={`/country/${country.code}`}
+            state={{
+              flagUrl: getFlagUrl(country.code),
+              countryName: country.name,
+            }}
             className="flex items-center gap-3 no-underline group"
           >
             <img
@@ -78,7 +113,7 @@ function CountryCard({ country, mode = "add", onUpdate, onRemove }) {
               fromCurrency="PKR"
               toCurrency={country.currency}
               initialAmount={currentAmount}
-              onAmountChange={(val) => setCurrentAmount(val)}
+              onAmountChange={(val: string) => setCurrentAmount(val)}
               onEnterPress={handleSaveAmount}
             />
 
@@ -121,7 +156,7 @@ function CountryCard({ country, mode = "add", onUpdate, onRemove }) {
                 type="text"
                 placeholder="e.g. Visit Eiffel Tower, Try street food…"
                 value={note}
-                onChange={(e) => setNote(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNote(e.target.value)}
                 onBlur={handleBlurNote}
                 onKeyDown={handleKeyDownNote}
                 className="w-full text-xs px-3 py-2 rounded-lg bg-panel dark:bg-slate-900 border border-card-border dark:border-slate-700 text-ink dark:text-white focus:outline-none focus:ring-1 focus:ring-teal"
@@ -135,6 +170,10 @@ function CountryCard({ country, mode = "add", onUpdate, onRemove }) {
           <div className="pt-2 border-t border-card-border dark:border-slate-700/60 flex items-center justify-between gap-2">
             <Link
               to={`/country/${country.code}`}
+              state={{
+                flagUrl: getFlagUrl(country.code),
+                countryName: country.name,
+              }}
               className="text-xs font-semibold text-teal dark:text-teal-300 hover:underline no-underline"
             >
               View Details &rarr;
@@ -171,5 +210,3 @@ function CountryCard({ country, mode = "add", onUpdate, onRemove }) {
     </Card>
   )
 }
-
-export default CountryCard
