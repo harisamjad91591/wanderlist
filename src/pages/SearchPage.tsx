@@ -9,14 +9,8 @@ import { searchCountries } from "@/lib/api"
 import { getFlagUrl } from "@/lib/utils"
 import type { Country } from "@/types"
 
-/**
- * Fetch status for main search overlay.
- */
 export type SearchPageStatus = "idle" | "loading" | "error"
 
-/**
- * Preset popular destination item contract.
- */
 export interface PopularDestination {
   name: string
   code: string
@@ -31,9 +25,6 @@ const POPULAR_DESTINATIONS: PopularDestination[] = [
   { name: "Switzerland", code: "CH" },
 ]
 
-/**
- * Search landing page providing live autocomplete, popular country shortcuts, and keyboard navigation.
- */
 export default function SearchPage() {
   const [query, setQuery] = useState<string>("")
   const [results, setResults] = useState<Country[]>([])
@@ -75,10 +66,15 @@ export default function SearchPage() {
     return () => clearTimeout(timeoutId)
   }, [query])
 
-  const handleSelectCountry = (code: string): void => {
+  const handleSelectCountry = (code: string, countryName?: string): void => {
     setQuery("")
     setResults([])
-    navigate(`/country/${code}`)
+    navigate(`/country/${code}`, {
+      state: {
+        flagUrl: getFlagUrl(code),
+        countryName: countryName || results.find((r) => r.code === code)?.name,
+      },
+    })
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => {
@@ -94,7 +90,7 @@ export default function SearchPage() {
       e.preventDefault()
       const selected = results[selectedIndex]
       if (selected) {
-        handleSelectCountry(selected.code)
+        handleSelectCountry(selected.code, selected.name)
       }
     } else if (e.key === "Escape") {
       setResults([])
@@ -141,7 +137,7 @@ export default function SearchPage() {
                   {results.map((country, idx) => (
                     <div
                       key={country.code}
-                      onClick={() => handleSelectCountry(country.code)}
+                      onClick={() => handleSelectCountry(country.code, country.name)}
                       onMouseEnter={() => setSelectedIndex(idx)}
                       className={`flex items-center justify-between px-4 py-3 cursor-pointer transition-colors ${
                         idx === selectedIndex
@@ -189,7 +185,7 @@ export default function SearchPage() {
                 <button
                   key={item.code}
                   type="button"
-                  onClick={() => handleSelectCountry(item.code)}
+                  onClick={() => handleSelectCountry(item.code, item.name)}
                   className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-card-border dark:border-slate-700 text-xs font-semibold text-ink dark:text-white hover:border-teal dark:hover:border-teal transition-all cursor-pointer shadow-sm hover:scale-[1.02]"
                 >
                   <img
