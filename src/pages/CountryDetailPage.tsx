@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react"
 import { ArrowLeft, Clock, CloudSun, Plus, StickyNote } from "lucide-react"
-import { Link, useParams } from "react-router-dom"
+import { Link, useLocation, useParams } from "react-router-dom"
 import { toast } from "react-toastify"
 
 import Navbar from "@/components/layout/Navbar"
 import Converter from "@/components/country/Converter"
+import CountryFlagLoader from "@/components/country/CountryFlagLoader"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -13,22 +14,18 @@ import { getCurrencySymbol, getFlagUrl } from "@/lib/utils"
 import { useBucketList } from "@/store/useBucketListStore"
 import type { Country } from "@/types"
 
-/**
- * Fetching status for country detail view.
- */
 export type DetailStatus = "loading" | "idle" | "error"
 
-/**
- * Props contract for individual stat indicators.
- */
 export interface StatProps {
   label: string
   value?: string | number | null
 }
 
-/**
- * Renders key-value metric pair with upper-case mono typography.
- */
+export interface CountryNavigationState {
+  flagUrl?: string
+  countryName?: string
+}
+
 function Stat({ label, value }: StatProps) {
   return (
     <div>
@@ -42,17 +39,13 @@ function Stat({ label, value }: StatProps) {
   )
 }
 
-/**
- * Props contract for CountryDetail component.
- */
-export interface CountryDetailProps {
-  code: string
-}
+function CountryDetail({ code }: { code: string }) {
+  const location = useLocation()
+  const navState = (location.state as CountryNavigationState) || {}
 
-/**
- * Detail card container fetching metadata, currency converter, live clock, and store management triggers.
- */
-function CountryDetail({ code }: CountryDetailProps) {
+  const activeFlagUrl = navState.flagUrl || (code ? getFlagUrl(code) : null)
+  const activeCountryName = navState.countryName
+
   const { bucketList, addCountry, updateCountryNote, removeCountry, isCountrySaved } = useBucketList()
   const [country, setCountry] = useState<Country | null>(null)
   const [status, setStatus] = useState<DetailStatus>("loading")
@@ -130,9 +123,14 @@ function CountryDetail({ code }: CountryDetailProps) {
 
   if (status === "loading") {
     return (
-      <div className="p-8 text-center font-mono text-sm text-muted-2 dark:text-slate-400">
-        Loading country details…
-      </div>
+      <Card className="rounded-[20px] bg-white dark:bg-slate-800 border-card-border dark:border-slate-700 shadow-md">
+        <CardContent className="p-6">
+          <CountryFlagLoader
+            flagUrl={activeFlagUrl}
+            countryName={activeCountryName}
+          />
+        </CardContent>
+      </Card>
     )
   }
 
@@ -244,9 +242,6 @@ function CountryDetail({ code }: CountryDetailProps) {
   )
 }
 
-/**
- * Route page rendering detailed country overview based on ISO route parameter.
- */
 export default function CountryDetailPage() {
   const { code } = useParams<{ code: string }>()
 
