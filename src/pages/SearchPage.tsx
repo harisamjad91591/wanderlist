@@ -7,8 +7,22 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { searchCountries } from "@/lib/api"
 import { getFlagUrl } from "@/lib/utils"
+import type { Country } from "@/types"
 
-const POPULAR_DESTINATIONS = [
+/**
+ * Fetch status for main search overlay.
+ */
+export type SearchPageStatus = "idle" | "loading" | "error"
+
+/**
+ * Preset popular destination item contract.
+ */
+export interface PopularDestination {
+  name: string
+  code: string
+}
+
+const POPULAR_DESTINATIONS: PopularDestination[] = [
   { name: "Japan", code: "JP" },
   { name: "Turkey", code: "TR" },
   { name: "United Arab Emirates", code: "AE" },
@@ -17,20 +31,22 @@ const POPULAR_DESTINATIONS = [
   { name: "Switzerland", code: "CH" },
 ]
 
-function SearchPage() {
-  const [query, setQuery] = useState("")
-  const [results, setResults] = useState([])
-  const [selectedIndex, setSelectedIndex] = useState(-1)
-  const [status, setStatus] = useState("idle")
+/**
+ * Search landing page providing live autocomplete, popular country shortcuts, and keyboard navigation.
+ */
+export default function SearchPage() {
+  const [query, setQuery] = useState<string>("")
+  const [results, setResults] = useState<Country[]>([])
+  const [selectedIndex, setSelectedIndex] = useState<number>(-1)
+  const [status, setStatus] = useState<SearchPageStatus>("idle")
 
   const navigate = useNavigate()
-  const inputRef = useRef(null)
+  const inputRef = useRef<HTMLInputElement | null>(null)
 
-  function handleSearchChange(e) {
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const value = e.target.value
     setQuery(value)
 
-    // Clear state directly in event handler instead of useEffect
     if (!value.trim()) {
       setResults([])
       setStatus("idle")
@@ -59,13 +75,13 @@ function SearchPage() {
     return () => clearTimeout(timeoutId)
   }, [query])
 
-  function handleSelectCountry(code) {
+  const handleSelectCountry = (code: string): void => {
     setQuery("")
     setResults([])
     navigate(`/country/${code}`)
   }
 
-  function handleKeyDown(e) {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => {
     if (results.length === 0) return
 
     if (e.key === "ArrowDown") {
@@ -76,7 +92,10 @@ function SearchPage() {
       setSelectedIndex((prev) => (prev > 0 ? prev - 1 : results.length - 1))
     } else if (e.key === "Enter" && selectedIndex >= 0) {
       e.preventDefault()
-      handleSelectCountry(results[selectedIndex].code)
+      const selected = results[selectedIndex]
+      if (selected) {
+        handleSelectCountry(selected.code)
+      }
     } else if (e.key === "Escape") {
       setResults([])
       setSelectedIndex(-1)
@@ -188,5 +207,3 @@ function SearchPage() {
     </div>
   )
 }
-
-export default SearchPage
