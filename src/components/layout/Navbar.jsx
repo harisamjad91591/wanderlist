@@ -5,7 +5,10 @@ import ThemeToggle from "@/components/layout/ThemeToggle"
 import { Badge } from "@/components/ui/badge"
 import { useBucketList } from "@/store/useBucketListStore"
 
-function Navbar() {
+/**
+ * Top navigation header rendering branding, active route indicators, badge counters, and theme control.
+ */
+export default function Navbar() {
   const { bucketList, history } = useBucketList()
   const location = useLocation()
 
@@ -74,5 +77,3 @@ function Navbar() {
     </nav>
   )
 }
-
-export default Navbar
