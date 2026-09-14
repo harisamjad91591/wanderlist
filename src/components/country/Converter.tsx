@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { ArrowRight } from "lucide-react"
+import { toast } from "react-toastify"
 
 import { Input } from "@/components/ui/input"
 import { convertCurrency } from "@/lib/api"
@@ -83,6 +84,7 @@ export default function Converter({
 
     if (value !== "" && Number.isNaN(Number(value))) {
       setInputError("Only numbers are allowed")
+      toast.error("Only numbers can be entered")
     } else if (Number(value) < 0) {
       setInputError("Amount cannot be negative")
     } else {
