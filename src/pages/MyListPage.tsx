@@ -4,6 +4,7 @@ import {
   ArrowUpDown,
   Calculator,
   Download,
+  Filter,
   Search,
   Trash2,
 } from "lucide-react"
@@ -92,26 +93,32 @@ export default function MyListPage() {
     bucketList.length > 0 ? (totalBudgetPKR / bucketList.length).toFixed(0) : "0"
 
   return (
-    <div className="min-h-screen bg-panel dark:bg-slate-900 transition-colors">
-      <div className="max-w-[900px] mx-auto px-6 py-8">
+    <div className="min-h-screen bg-page dark:bg-slate-950 transition-colors">
+      <div className="max-w-[1040px] mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <Navbar />
 
-        <div className="flex items-center justify-between gap-3 mt-5 mb-5 flex-wrap">
-          <div className="flex items-center gap-3">
-            <h2 className="font-display font-semibold text-[26px] tracking-[-0.01em] m-0 text-ink dark:text-white">
-              My Bucket List
-            </h2>
-            <Badge size="md">{displayCount} places</Badge>
-          </div>
+        <div className="relative overflow-hidden mt-5 mb-5 p-4 sm:p-5 rounded-[18px] bg-gradient-to-br from-white via-blue-50/70 to-indigo-100/70 dark:from-slate-800 dark:via-slate-800 dark:to-slate-900 border border-card-border dark:border-slate-700 shadow-[0_8px_24px_rgba(37,99,235,0.07)]">
+          <div className="absolute -right-10 -top-14 size-32 rounded-full border-[14px] border-white/50 dark:border-slate-700/30" />
+          <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-3 flex-wrap">
+                <h2 className="font-display font-semibold text-[25px] sm:text-[28px] leading-none tracking-[-0.02em] m-0 text-ink dark:text-white">
+                  My Bucket List
+                </h2>
+                <Badge size="md" className="bg-teal text-white border-transparent">
+                  {displayCount} {displayCount === 1 ? "place" : "places"}
+                </Badge>
+              </div>
+            </div>
 
-          <div className="flex items-center gap-2">
+          <div className="relative flex items-center gap-2 mt-3 sm:mt-0">
             {bucketList.length > 0 && (
               <>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleExportPlan}
-                  className="text-xs border-card-border dark:border-slate-700 dark:text-slate-200 hover:bg-surface-soft dark:hover:bg-slate-800"
+                  className="text-xs bg-white/80 border-blue-200 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-700"
                 >
                   <Download className="size-3.5 mr-1 text-teal" />
                   Export Plan
@@ -120,7 +127,7 @@ export default function MyListPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => setIsConfirmOpen(true)}
-                  className="text-xs text-rose-600 border-rose-200 hover:bg-rose-50 dark:border-rose-900/50 dark:bg-rose-950/30 dark:hover:bg-rose-950/80"
+                  className="text-xs text-rose-600 bg-white/70 border-rose-200 hover:bg-rose-50 dark:border-rose-900/50 dark:bg-slate-800 dark:hover:bg-rose-950/80"
                 >
                   <Trash2 className="size-3.5 mr-1" />
                   Clear All
@@ -129,33 +136,34 @@ export default function MyListPage() {
             )}
           </div>
         </div>
+        </div>
 
         {bucketList.length > 0 && (
-          <div className="mb-6 p-5 rounded-2xl bg-gradient-to-r from-teal/10 via-surface-soft to-terracotta/10 dark:from-slate-800 dark:via-slate-800 dark:to-slate-800 border border-card-border dark:border-slate-700 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="mb-5 p-4 sm:p-5 rounded-[18px] bg-white dark:bg-slate-800 border border-card-border dark:border-slate-700 shadow-[0_6px_20px_rgba(15,23,42,0.05)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3.5">
-              <div className="p-3 rounded-xl bg-teal text-white shrink-0 shadow-sm">
-                <Calculator className="size-6" />
+              <div className="p-3 rounded-xl bg-teal text-white shrink-0 shadow-[0_6px_14px_rgba(37,99,235,0.22)]">
+                <Calculator className="size-5" />
               </div>
               <div>
-                <div className="font-mono text-xs uppercase tracking-wider text-muted-5 dark:text-slate-400">
+                <div className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-5 dark:text-slate-400">
                   Total Estimated Budget
                 </div>
-                <div className="font-display font-bold text-2xl text-ink dark:text-white">
+                <div className="font-display font-bold text-2xl leading-tight text-ink dark:text-white">
                   {totalBudgetPKR.toLocaleString()}{" "}
                   <span className="text-sm font-mono text-teal font-semibold">PKR</span>
                 </div>
               </div>
             </div>
 
-            <div className="text-left sm:text-right font-mono text-xs text-muted-2 dark:text-slate-400">
-              <div>Average / country: <span className="font-bold text-ink dark:text-white">{Number(averageBudget).toLocaleString()} PKR</span></div>
-              <div>Saved destinations: <span className="font-bold text-ink dark:text-white">{bucketList.length}</span></div>
+            <div className="grid grid-cols-2 gap-5 text-left sm:text-right font-mono text-xs text-muted-2 dark:text-slate-400">
+              <div><span className="block mb-1 text-[10px] uppercase tracking-wider">Average / country</span><span className="font-bold text-ink dark:text-white">{Number(averageBudget).toLocaleString()} PKR</span></div>
+              <div><span className="block mb-1 text-[10px] uppercase tracking-wider">Saved destinations</span><span className="font-bold text-ink dark:text-white">{bucketList.length}</span></div>
             </div>
           </div>
         )}
 
         {bucketList.length > 0 && (
-          <div className="flex flex-col sm:flex-row items-center gap-3 mb-6">
+          <div className="flex flex-col sm:flex-row items-center gap-2 mb-5 p-1.5 rounded-[16px] bg-slate-100/80 dark:bg-slate-800/80 border border-card-border dark:border-slate-700">
             <div className="relative flex-1 w-full">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-2 pointer-events-none" />
               <Input
@@ -163,16 +171,24 @@ export default function MyListPage() {
                 placeholder="Filter saved places (e.g. A)…"
                 value={searchQuery}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
-                className="pl-11 pr-4 bg-white dark:bg-slate-800 border border-card-border dark:border-slate-700 rounded-xl"
+                className="pl-11 pr-24 py-2.5 bg-white dark:bg-slate-900 border border-transparent dark:border-slate-700 rounded-xl shadow-sm"
               />
+              <span
+                className="absolute right-3 top-1/2 -translate-y-1/2 inline-flex items-center gap-1.5 text-muted-2"
+                aria-label={`${displayCount} matching saved places`}
+                title={`${displayCount} matching saved places`}
+              >
+                <Filter className="size-4" />
+                <Badge size="sm">{displayCount}</Badge>
+              </span>
             </div>
 
-            <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+            <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 px-2">
               <ArrowUpDown className="size-4 text-muted-2" />
               <select
                 value={sortBy}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSortBy(e.target.value as SortOption)}
-                className="px-3 py-2 text-xs font-semibold rounded-xl bg-white dark:bg-slate-800 border border-card-border dark:border-slate-700 text-ink dark:text-white focus:outline-none focus:ring-1 focus:ring-teal cursor-pointer w-full sm:w-auto"
+                className="px-3 py-2 text-xs font-semibold rounded-xl bg-white dark:bg-slate-900 border border-transparent dark:border-slate-700 text-ink dark:text-white focus:outline-none focus:ring-2 focus:ring-teal/30 cursor-pointer w-full sm:w-auto shadow-sm"
               >
                 <option value="default">Sort: Recently Added</option>
                 <option value="name-asc">Name: A to Z</option>
@@ -185,15 +201,19 @@ export default function MyListPage() {
         )}
 
         {bucketList.length === 0 ? (
-          <p className="text-muted-1 text-sm">
-            Nothing here yet — search for a country and add it to your list.
-          </p>
+          <div className="p-7 sm:p-9 text-center rounded-[20px] bg-white dark:bg-slate-800 border border-dashed border-card-border dark:border-slate-700">
+            <div className="mx-auto mb-3 flex size-11 items-center justify-center rounded-xl bg-blue-50 dark:bg-slate-700 text-teal">
+              <Calculator className="size-5" />
+            </div>
+            <h3 className="font-display text-xl font-semibold text-ink dark:text-white">Your next adventure starts here</h3>
+            <p className="mt-2 text-sm text-muted-1 dark:text-slate-400">Search for a country and add it to your travel collection.</p>
+          </div>
         ) : filteredBucketList.length === 0 ? (
-          <p className="text-muted-1 text-sm">
+          <p className="p-8 text-center rounded-[22px] bg-white dark:bg-slate-800 border border-card-border dark:border-slate-700 text-muted-1 dark:text-slate-400 text-sm">
             No saved places starting with &ldquo;{searchQuery}&rdquo;.
           </p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredBucketList.map((country) => (
               <CountryCard
                 key={country.code}
