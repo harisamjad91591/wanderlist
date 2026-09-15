@@ -246,10 +246,11 @@ export default function CountryDetailPage() {
   const { code } = useParams<{ code: string }>()
 
   return (
-    <div className="min-h-screen bg-panel dark:bg-slate-900 transition-colors">
-      <div className="max-w-[900px] mx-auto px-6 py-8">
+    <div className="page-shell min-h-screen bg-panel dark:bg-slate-900 transition-colors">
+      <div className="page-container max-w-[900px] mx-auto px-6 py-8">
         <Navbar />
 
+        <div className="page-eyebrow mt-12 mb-3">Destination dossier</div>
         <Link
           to="/"
           className="inline-flex items-center gap-[7px] no-underline text-sm font-semibold text-teal bg-teal-ghost dark:bg-slate-800 dark:text-teal-300 px-[14px] py-2 rounded-[10px] mt-5 mb-5 hover:bg-teal/10 transition-colors"
