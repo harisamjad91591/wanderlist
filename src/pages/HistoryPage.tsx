@@ -54,15 +54,13 @@ export default function HistoryPage() {
   )
 
   return (
-    <div className="min-h-screen bg-panel dark:bg-slate-900 transition-colors">
-      <div className="max-w-[900px] mx-auto px-6 py-8">
+    <div className="page-shell min-h-screen bg-panel dark:bg-slate-900 transition-colors">
+      <div className="page-container max-w-[900px] mx-auto px-6 py-8">
         <Navbar />
 
-        <div className="flex items-center justify-between gap-3 mt-5 mb-6 flex-wrap">
+        <div className="flex items-end justify-between gap-3 mt-12 mb-6 flex-wrap">
           <div className="flex items-center gap-3">
-            <h2 className="font-display font-semibold text-[26px] tracking-[-0.01em] m-0 text-ink dark:text-white">
-              Activity History
-            </h2>
+            <div><div className="page-eyebrow mb-2">Your travel trail</div><h2 className="font-display font-semibold text-[30px] tracking-[-0.01em] m-0 text-ink dark:text-white">Activity History</h2></div>
             <Badge size="md">{history.length} logs</Badge>
           </div>
 
