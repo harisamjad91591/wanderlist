@@ -34,18 +34,6 @@ export default function SearchPage() {
   const navigate = useNavigate()
   const inputRef = useRef<HTMLInputElement | null>(null)
 
-  useEffect(() => {
-    const handleShortcut = (event: KeyboardEvent): void => {
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
-        event.preventDefault()
-        inputRef.current?.focus()
-      }
-    }
-
-    window.addEventListener("keydown", handleShortcut)
-    return () => window.removeEventListener("keydown", handleShortcut)
-  }, [])
-
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const value = e.target.value
     setQuery(value)
@@ -135,7 +123,7 @@ export default function SearchPage() {
               <div className="search-frame">
                 <Search className="size-5 text-teal shrink-0" />
                 <Input ref={inputRef} type="text" placeholder="Where to next? Search a country…" value={query} onChange={handleSearchChange} onKeyDown={handleKeyDown} className="home-search-input" />
-                <span className="search-hint hidden sm:inline-flex">Ctrl K</span>
+                <span className="search-hint hidden sm:inline-flex">⌘ K</span>
               </div>
               {query.trim() !== "" && (
                 <div className="absolute top-full left-0 right-0 mt-3 bg-white dark:bg-slate-800 border border-card-border dark:border-slate-700 rounded-2xl shadow-2xl overflow-hidden z-30 animate-in fade-in-50 duration-150">
