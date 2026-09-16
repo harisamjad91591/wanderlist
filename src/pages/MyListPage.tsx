@@ -93,15 +93,16 @@ export default function MyListPage() {
     bucketList.length > 0 ? (totalBudgetPKR / bucketList.length).toFixed(0) : "0"
 
   return (
-    <div className="min-h-screen bg-page dark:bg-slate-950 transition-colors">
-      <div className="max-w-[1040px] mx-auto px-4 sm:px-6 py-6 sm:py-8">
+    <div className="page-shell min-h-screen bg-page dark:bg-slate-950 transition-colors">
+      <div className="page-container max-w-[1040px] mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <Navbar />
 
-        <div className="relative overflow-hidden mt-5 mb-5 p-4 sm:p-5 rounded-[18px] bg-gradient-to-br from-white via-blue-50/70 to-indigo-100/70 dark:from-slate-800 dark:via-slate-800 dark:to-slate-900 border border-card-border dark:border-slate-700 shadow-[0_8px_24px_rgba(37,99,235,0.07)]">
+        <div className="page-banner relative overflow-hidden mt-12 mb-5 p-4 sm:p-5 rounded-[18px] bg-gradient-to-br from-white via-blue-50/70 to-indigo-100/70 dark:from-slate-800 dark:via-slate-800 dark:to-slate-900 border border-card-border dark:border-slate-700 shadow-[0_8px_24px_rgba(37,99,235,0.07)]">
           <div className="absolute -right-10 -top-14 size-32 rounded-full border-[14px] border-white/50 dark:border-slate-700/30" />
           <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <div className="flex items-center gap-3 flex-wrap">
+                <span className="page-eyebrow">Your saved atlas</span>
                 <h2 className="font-display font-semibold text-[25px] sm:text-[28px] leading-none tracking-[-0.02em] m-0 text-ink dark:text-white">
                   My Bucket List
                 </h2>
