@@ -3,15 +3,11 @@ import type { Country } from "@/types"
 const COUNTRIES_API_URL = "https://api.restcountries.com/countries/v5"
 const RATES_API_URL = "https://api.frankfurter.dev/v2"
 
-// Hardcoded API Key for practice
 const COUNTRIES_API_KEY = "rc_live_075f423d21cc46098a8be3098beced10"
 
 const RESPONSE_FIELDS =
   "names.common,codes.alpha_2,capitals,currencies,calling_codes,continents,languages"
 
-/**
- * Raw internal language payload returned by the external Rest Countries API.
- */
 interface RawLanguage {
   name?: string
   english_name?: string
@@ -31,9 +27,6 @@ interface RawCountry {
   languages?: RawLanguage[]
 }
 
-/**
- * API response container contract.
- */
 interface RawApiResponse {
   data?: {
     objects?: RawCountry[]
@@ -87,7 +80,6 @@ async function countriesRequest(
   const json: RawApiResponse = await res.json()
 
   if (!res.ok) {
-    console.error("Countries API error:", res.status, json)
     throw new Error(json.errors?.[0]?.message ?? `Countries API error (${res.status})`)
   }
 
