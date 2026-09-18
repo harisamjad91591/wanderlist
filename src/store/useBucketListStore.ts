@@ -1,6 +1,36 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
+import { z } from "zod"
 import type { BucketListItem, Country, HistoryLog, HistoryType, SortOption } from "@/types"
+
+const PersistedCountrySchema = z.object({
+  code: z.string(),
+  name: z.string(),
+  capital: z.string().optional(),
+  currency: z.string().optional(),
+  phone: z.string().optional(),
+  continent: z.object({ name: z.string() }).optional(),
+  languages: z.array(z.object({ name: z.string() })).optional(),
+  amount: z.string().optional(),
+  note: z.string().optional(),
+})
+
+const PersistedHistorySchema = z.object({
+  id: z.string(),
+  type: z.enum(["ADD", "UPDATE", "NOTE", "REMOVE"]),
+  countryName: z.string(),
+  details: z.string(),
+  timestamp: z.string(),
+})
+
+/**
+ * Schema for the subset written to localStorage by Zustand persist.
+ * Stored browser data can outlive the code version that originally created it.
+ */
+const PersistedStateSchema = z.object({
+  bucketList: z.array(PersistedCountrySchema),
+  history: z.array(PersistedHistorySchema),
+})
 
 /**
  * State properties stored in Zustand bucket list store.
@@ -161,6 +191,13 @@ export const useBucketListStore = create<BucketListStore>()(
     {
       name: "wanderlist:bucket-list-zustand",
       partialize: (state) => ({ bucketList: state.bucketList, history: state.history }),
+      merge: (persistedState, currentState) => {
+        // Ignore invalid or outdated localStorage data and start from a clean state.
+        const parsed = PersistedStateSchema.safeParse(persistedState)
+        if (!parsed.success) return currentState
+
+        return { ...currentState, ...parsed.data }
+      },
     }
   )
 )
