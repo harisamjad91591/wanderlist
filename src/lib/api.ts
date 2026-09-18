@@ -1,4 +1,5 @@
 import type { Country } from "@/types"
+import { z } from "zod"
 
 const COUNTRIES_API_URL = "https://api.restcountries.com/countries/v5"
 const RATES_API_URL = "https://api.frankfurter.dev/v2"
@@ -8,31 +9,43 @@ const COUNTRIES_API_KEY = "rc_live_075f423d21cc46098a8be3098beced10"
 const RESPONSE_FIELDS =
   "names.common,codes.alpha_2,capitals,currencies,calling_codes,continents,languages"
 
-interface RawLanguage {
-  name?: string
-  english_name?: string
-  common?: string
-}
+const RawLanguageSchema = z.object({
+  name: z.string().optional(),
+  english_name: z.string().optional(),
+  common: z.string().optional(),
+})
+
+const CurrencySchema = z.union([
+  z.string(),
+  z.object({ code: z.string().optional(), iso_code: z.string().optional() }),
+])
 
 /**
- * Flexible structural representation of unnormalized country response objects.
+ * Runtime schema for the flexible, unnormalized country payload returned by the API.
+ * TypeScript interfaces alone cannot protect the app from malformed JSON at runtime.
  */
-interface RawCountry {
-  codes?: { alpha_2?: string }
-  names?: { common?: string }
-  capitals?: Array<{ name?: string }>
-  currencies?: Record<string, { code?: string; iso_code?: string } | string> | Array<string | { code?: string; iso_code?: string }>
-  calling_codes?: string[]
-  continents?: string[]
-  languages?: RawLanguage[]
-}
+const RawCountrySchema = z.object({
+  codes: z.object({ alpha_2: z.string().optional() }).optional(),
+  names: z.object({ common: z.string().optional() }).optional(),
+  capitals: z.array(z.object({ name: z.string().optional() })).optional(),
+  currencies: z.union([z.record(z.string(), CurrencySchema), z.array(CurrencySchema)]).optional(),
+  calling_codes: z.array(z.string()).optional(),
+  continents: z.array(z.string()).optional(),
+  languages: z.array(RawLanguageSchema).optional(),
+})
 
-interface RawApiResponse {
-  data?: {
-    objects?: RawCountry[]
-  }
-  errors?: Array<{ message?: string }>
-}
+const RawApiResponseSchema = z.object({
+  data: z.object({ objects: z.array(RawCountrySchema).optional() }).optional(),
+  errors: z.array(z.object({ message: z.string().optional() })).optional(),
+})
+
+const ExchangeRateResponseSchema = z.object({
+  rate: z.number(),
+  date: z.string().optional(),
+})
+
+type RawCountry = z.infer<typeof RawCountrySchema>
+type RawApiResponse = z.infer<typeof RawApiResponseSchema>
 
 /**
  * Currency conversion input parameters contract.
@@ -77,7 +90,13 @@ async function countriesRequest(
     headers: { Authorization: `Bearer ${COUNTRIES_API_KEY}` },
   })
 
-  const json: RawApiResponse = await res.json()
+  // Validate external JSON before reading nested fields or normalizing it.
+  const parsed = RawApiResponseSchema.safeParse(await res.json())
+  if (!parsed.success) {
+    throw new Error("Invalid countries API response")
+  }
+
+  const json: RawApiResponse = parsed.data
 
   if (!res.ok) {
     throw new Error(json.errors?.[0]?.message ?? `Countries API error (${res.status})`)
@@ -174,15 +193,15 @@ export async function convertCurrency({
     throw new Error(`Conversion unavailable for ${base} → ${target}`)
   }
 
-  const data: { rate?: number; date?: string } = await res.json()
-
-  if (typeof data.rate !== "number") {
+  // Exchange-rate responses are small, so reject the complete payload when its shape changes.
+  const parsed = ExchangeRateResponseSchema.safeParse(await res.json())
+  if (!parsed.success) {
     throw new Error(`Conversion unavailable for ${base} → ${target}`)
   }
 
   return {
-    rate: data.rate,
-    result: numericAmount * data.rate,
-    date: data.date ?? null,
+    rate: parsed.data.rate,
+    result: numericAmount * parsed.data.rate,
+    date: parsed.data.date ?? null,
   }
 }
